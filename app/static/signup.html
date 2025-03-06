@@ -1,28 +1,40 @@
 <!DOCTYPE html>
 <html>
+    
     <head>
         <meta charset="UTF-8">
         <title>Signup</title>
+        <link rel="stylesheet" href="/static/css/signup.css">
     </head>
-    <body>
-        <h2>Signup</h2>
 
-        <form action="/signup" method="post">
-            <label for="name">Name:</label>
-            <input type="text" id="name" name="name" required>
+    <body>
+        <div class="logo">
+            <h1>Team Name</h1>
+        </div>
+
+        <div class="signup">
+            <h2>Sign Up</h2>
+            <form action="/login" method="POST">
+                <div>
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" name="name" placeholder="Enter your name" required>
+                </div>
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                <div>
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                </div>
+                <div>
+                    <label for="location">Location:</label>
+                    <input type="text" id="location" name="location" placeholder="Enter your location" required>
+                </div>
+                <button id="submit" type="submit">Sign Up</button>
+
+                <p>Already have an account?</p>
+                <p><a href="/login">Log in here</a></p>
+            </form>
+        </div>
     
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required>
-    
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
-    
-            <label for="location">Location:</label>
-            <input type="text" id="location" name="location" required>
-    
-            <button type="submit">Signup</button>
-        </form>
-    
-        <p>Already have an account? <a href="/login">Login here</a></p>
     </body>
 </html>

@@ -1,14 +1,17 @@
 from fastapi import FastAPI, Request, Response, HTTPException
-from fastapi.responses import Response, HTMLResponse
+from fastapi.responses import Response, HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 import uvicorn
 import os
 import bcrypt
 import mysql.connector
-from .database import create_tables, get_db_connection
 from pydantic import BaseModel
 from datetime import datetime
 
+from .database import (
+    setup_database, 
+    get_db_connection
+)
 
 app = FastAPI()
 
