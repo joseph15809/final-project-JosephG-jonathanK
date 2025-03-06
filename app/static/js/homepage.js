@@ -1,12 +1,12 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const loginContainer = document.querySelector(".login-container");
-    const signupContainer = document.querySelector(".signup-container");
+    const loginBtn = document.getElementById("login");
+    const signupBtn = document.getElementById("signup");
 
-    login.addEventListener("click", () => {
+    loginBtn.addEventListener("click", () => {
         window.location.href = "/login";
     });
 
-    signupContainer.addEventListener("click", () => {
+    signupBtn.addEventListener("click", () => {
         window.location.href = "/signup";
     });
 });

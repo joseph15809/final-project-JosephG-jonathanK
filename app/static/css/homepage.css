@@ -1,0 +1,12 @@
+#login, #signup {
+    background: linear-gradient(135deg, #6e8efb, #a777e3); /* Gradient background */
+    border: none;
+    color: white;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 25px; /* Rounded corners */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
