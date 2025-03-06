@@ -28,7 +28,7 @@ async def lifespan(app: FastAPI):
     """
     # Startup: Setup resources
     try:
-        setup_database() 
+        await setup_database() 
         print("Database setup completed")
         yield
     finally:
@@ -111,12 +111,12 @@ async def login(request: Request):
 
     user = await get_user_by_email(email)
 
-    if not user or not bcrypt.checkpw(password.encode(), user["password"].encode()):
+    if not user or not bcrypt.checkpw(password.encode(), user["password"].encode('utf-8')):
         raise HTTPException(status_code=401, detail="Invalid email or password") # checks if email and hashed password match
 
     # Generate session ID and store it
     session_id = str(uuid.uuid4())
-    await create_session(user["id"], session_id)
+    await create_session(user["user_id"], session_id)
 
     # Set cookie with session ID
     response = RedirectResponse(url=f"/dashboard/{user['user_id']}", status_code=302)

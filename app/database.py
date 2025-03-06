@@ -65,7 +65,7 @@ def get_db_connection(
     )
     
 
-def setup_database():
+async def setup_database():
     """Creates users, devices, wardrobe, and sessions tables."""
 
     # Define table schemas
