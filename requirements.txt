@@ -3,6 +3,7 @@ pydantic
 uvicorn
 mysql-connector-python
 pandas
+uuid
 python-dotenv
 bcrypt
 python-multipart

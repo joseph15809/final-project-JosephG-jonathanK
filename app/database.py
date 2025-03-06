@@ -1,4 +1,5 @@
 import os
+import time
 import mysql.connector
 import pandas as pd
 from mysql.connector import Error
@@ -7,10 +8,14 @@ import logging
 from typing import Optional
 
 load_dotenv()
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+
 
 class DatabaseConnectionError(Exception):
     """Custom exception for database connection failures."""
     pass
+
 
 def get_db_connection(
     max_retries: int = 12,  # 12 retries = 1 minute total (12 * 5 seconds)
@@ -60,91 +65,71 @@ def get_db_connection(
     )
     
 
-async def setup_database(initial_users: dict = None):
-    """Creates user and session tables and populates initial user data if provided."""
-    connection = None
-    cursor = None
+def setup_database():
+    """Creates users, devices, wardrobe, and sessions tables."""
 
     # Define table schemas
     table_schemas = {
         "users": """
-            CREATE TABLE users (
+            CREATE TABLE IF NOT EXISTS users (
                 user_id INT AUTO_INCREMENT PRIMARY KEY,
                 name VARCHAR(100) NOT NULL,
-                email VARCHAR(100) NOT NULL,
+                email VARCHAR(100) NOT NULL UNIQUE,
                 password VARCHAR(100) NOT NULL,
                 location VARCHAR(100) NOT NULL
             )
         """,
         "devices": """
-            CREATE TABLE devices (
+            CREATE TABLE IF NOT EXISTS devices (
                 device_id INT AUTO_INCREMENT PRIMARY KEY,
                 name VARCHAR(100) NOT NULL,
                 user_id INT NOT NULL,
-                timestamp DATETIME NOT NULL
+                timestamp DATETIME NOT NULL,
+                FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
             )
         """,
         "wardrobe": """
-            CREATE TABLE wardrobe (
+            CREATE TABLE IF NOT EXISTS wardrobe (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 name VARCHAR(100) NOT NULL,
                 user_id INT NOT NULL,
                 type VARCHAR(100) NOT NULL,
                 color VARCHAR(100) NOT NULL,
-                size VARCHAR(100) NOT NULL
+                size VARCHAR(100) NOT NULL,
+                FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
             )
         """,
         "sessions": """
-            CREATE TABLE sessions (
+            CREATE TABLE IF NOT EXISTS sessions (
                 id VARCHAR(36) PRIMARY KEY,
                 user_id INT NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+                FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
             )
         """,
     }
 
+    # Connect to the database
+    connection = None
+    cursor = None
+
     try:
-        # Get database connection
         connection = get_db_connection()
+        if not connection:
+            raise Exception("Database connection failed")
+
         cursor = connection.cursor()
 
-        # Drop and recreate tables one by one
-        for table_name in ["sessions", "users"]:
-            # Drop table if exists
-            logger.info(f"Dropping table {table_name} if exists...")
-            cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
-            connection.commit()
+        # Create tables
+        for table_name, table_query in table_schemas.items():
+            cursor.execute(table_query)
+            logger.info(f"Table '{table_name}' checked/created successfully.")
 
-        # Recreate tables one by one
-        for table_name, create_query in table_schemas.items():
-
-            try:
-                # Create table
-                logger.info(f"Creating table {table_name}...")
-                cursor.execute(create_query)
-                connection.commit()
-                logger.info(f"Table {table_name} created successfully")
-
-            except Error as e:
-                logger.error(f"Error creating table {table_name}: {e}")
-                raise
-
-        # Insert initial users if provided
-        if initial_users:
-            try:
-                insert_query = "INSERT INTO users (username, password) VALUES (%s, %s)"
-                for username, password in initial_users.items():
-                    cursor.execute(insert_query, (username, password))
-                connection.commit()
-                logger.info(f"Inserted {len(initial_users)} initial users")
-            except Error as e:
-                logger.error(f"Error inserting initial users: {e}")
-                raise
+        connection.commit()  # Commit all changes
 
     except Exception as e:
         logger.error(f"Database setup failed: {e}")
-        raise
+        raise  # Rethrow exception to avoid silent failure
 
     finally:
         if cursor:
@@ -153,7 +138,159 @@ async def setup_database(initial_users: dict = None):
             connection.close()
             logger.info("Database connection closed")
 
-            
-    connection.commit()
-    cursor.close()
-    connection.close()
+async def add_user(name: str, email: str, password: str, location: str) -> int:
+    """Insert a new user into the database and return the user ID."""
+    connection = None
+    cursor = None
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor()
+
+        cursor.execute(
+            "INSERT INTO users (name, email, password, location) VALUES (%s, %s, %s, %s)",
+            (name, email, password, location)
+        )
+        connection.commit()
+
+        # Get the user_id of the newly created user
+        cursor.execute("SELECT LAST_INSERT_ID()")
+        user_id = cursor.fetchone()[0]
+
+        return user_id  # Return the newly created user ID
+
+    except Exception as e:
+        if connection:
+            connection.rollback()  # Rollback on failure
+        raise Exception(f"Failed to insert user: {e}")
+
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()       
+
+
+async def get_user_by_email(email: str) -> Optional[dict]:
+    """Retrieve user from database by email."""
+    connection = None
+    cursor = None
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+        return cursor.fetchone()
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+async def get_user_by_id(user_id: int) -> Optional[dict]:
+    """
+    Retrieve user from database by ID.
+
+    Args:
+        user_id: The ID of the user to retrieve
+
+    Returns:
+        Optional[dict]: User data if found, None otherwise
+    """
+    connection = None
+    cursor = None
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM users WHERE user_id = %s", (user_id,))
+        return cursor.fetchone()
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+async def create_session(user_id: int, session_id: str) -> bool:
+    """Create a new session in the database."""
+    connection = None
+    cursor = None
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor()
+        cursor.execute(
+            "INSERT INTO sessions (id, user_id) VALUES (%s, %s)", (session_id, user_id)
+        )
+        connection.commit()
+        return True
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+async def get_session(session_id: str) -> Optional[dict]:
+    """Retrieve session from database."""
+    connection = None
+    cursor = None
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(
+            """
+            SELECT *
+            FROM sessions s
+            WHERE s.id = %s
+        """,
+            (session_id,),
+        )
+        return cursor.fetchone()
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+async def delete_session(session_id: str) -> bool:
+    """Delete a session from the database."""
+    connection = None
+    cursor = None
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor()
+        cursor.execute("DELETE FROM sessions WHERE id = %s", (session_id,))
+        connection.commit()
+        return True
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+def clear_database():
+    """Deletes all data from all tables."""
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute("SET FOREIGN_KEY_CHECKS = 0;")
+        cursor.execute("TRUNCATE TABLE sessions;")
+        cursor.execute("TRUNCATE TABLE wardrobe;")
+        cursor.execute("TRUNCATE TABLE devices;")
+        cursor.execute("TRUNCATE TABLE users;")
+        cursor.execute("SET FOREIGN_KEY_CHECKS = 1;")
+        connection.commit()
+        print("Database cleared successfully.")
+
+    except Exception as e:
+        connection.rollback()
+        print(f"Failed to clear database: {e}")
+
+    finally:
+        cursor.close()
+        connection.close()
+
+# Run the cleanup
+clear_database()
