@@ -1,0 +1,48 @@
+.signup {
+    background-color: white;
+    margin: auto;
+    width: fit-content;
+    padding: 10px;
+    border-radius: 25px;
+}
+  
+h2 {
+    margin-top: 10%;
+    text-align: center;
+}
+
+label {
+    display: flex;
+}
+  
+input {
+    width: 25vw;
+    border-style: outset;
+    border-color: whitesmoke;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+p {
+    text-align: center;
+}
+
+#submit{
+    background: linear-gradient(135deg, #6e8efb, #a777e3); /* Gradient background */
+    border: none;
+    color: white;
+    padding: 8px 8px;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 25px; /* Rounded corners */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    margin-top: 5px;
+    margin-bottom: 10%;
+}
+
+body {
+    background: linear-gradient(135deg, #6e8efb, #a777e3); /* Gradient background */
+}
+
