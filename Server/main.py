@@ -34,8 +34,8 @@ def on_message(client, userdata, message):
     try:
         payload = json.loads(message.payload.decode())
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        mac_address = payload.get("mac_address")
-        temperature = payload.get("temperature")
+        mac_address = payload["mac_address"]
+        temperature = payload["temperature"]
 
         if not mac_address:
             print(f"[ERROR] MAC address is missing in the payload: {payload}")
@@ -48,8 +48,9 @@ def on_message(client, userdata, message):
                 "unit": "Celsius",
                 "timestamp": timestamp
             }
+            print(temperature_data)
             response = requests.post(url, json=temperature_data)
-
+            
             if response.status_code == 200:
                 print(f"[{timestamp}] Sent temperature: {payload['temperature']}°C")
             else:

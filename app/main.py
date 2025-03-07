@@ -18,6 +18,7 @@ from .database import (
     get_session,
     delete_session,
     add_user,
+    get_db_connection,
 )
 
 @asynccontextmanager
@@ -279,14 +280,12 @@ def get_all_sensor_data(user_id: int,
     return results
 
 
-@app.post("/api/{sensor_type}")
-def insert_sensor_data(sensor_type: str, data: SensorData):
-    if sensor_type not in valid_sensor:
-        raise HTTPException(status_code=404, detail="invalid sensor type")
+@app.post("/api/temperature")
+def insert_sensor_data(data: SensorData):
 
     connection = get_db_connection()
     cursor = connection.cursor(dictionary=True)
-    cursor.execute(f"INSERT INTO {sensor_type} (mac_address, value, unit, timestamp) VALUES (%s, %s, %s, %s)", 
+    cursor.execute(f"INSERT INTO temperature (mac_address, value, unit, timestamp) VALUES (%s, %s, %s, %s)", 
                                             (data.mac_address, data.value, data.unit, data.timestamp))
     connection.commit()
     new_id = cursor.lastrowid
@@ -372,4 +371,4 @@ def signup_html(request: Request):
 
 
 if __name__ == "__main__":
-   uvicorn.run(app="app.main:app", host="0.0.0.0", port=6543, reload=True)
+   uvicorn.run(app="app.main:app", host="0.0.0.0", port=8000, reload=True)
