@@ -47,6 +47,9 @@ valid_sensor = {"temperature"}
 class DeviceRegistration(BaseModel):
     mac_address: str
 
+class DeviceAssignment(BaseModel):
+    device_id: int   
+
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 def read_html(file_path: str) -> str:
@@ -236,9 +239,9 @@ def get_user_devices(user_id: int):
 
 
 
-@app.get("/api/{uesr_id}/{device_id}/{sensor_type}")
+@app.get("/api/{uesr_id}/{mac_address}/{sensor_type}")
 def get_all_sensor_data(user_id: int,
-                        device_id: int,
+                        mac_address: str,
                         sensor_type: str,
                         order_by: str = Query(None, alias="order-by"),
                         start_date: str = Query(None, alias="start-date"),
@@ -248,8 +251,8 @@ def get_all_sensor_data(user_id: int,
         raise HTTPException(status_code=404, detail="invalid sensor type")
 
     query = f"SELECT * FROM {sensor_type}"
-    condition = ["user_id = %s", "device_id = %s"]
-    params = [user_id, device_id]
+    condition = ["user_id = %s", "mac_address = %s"]
+    params = [user_id, mac_address]
 
     if start_date:
         condition.append("timestamp >= %s")
@@ -291,6 +294,81 @@ def insert_sensor_data(sensor_type: str, data: SensorData):
     connection.close()
 
     return {"id": new_id}
+
+
+@app.get("/api/user/{user_id}/devices")
+def get_user_devices(user_id: int):
+    """Retrieve all ESP32 devices registered to a specific user."""
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute("SELECT device_id, mac_address, name FROM devices WHERE user_id = %s", (user_id))
+        devices = cursor.fetchall()
+
+        return {"user_id": user_id, "devices": devices}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {e}")
+
+    finally:
+        cursor.close()
+        connection.close()
+
+
+@app.get("api/devices")
+def get_devices():
+    """Get avialable an ESP32 device to a user."""
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute("SELECT device_id FROM devices WHERE user_id = %s", ('NULL'))
+        devices = cursor.fetchone()
+
+        return devices
+
+    except Exception as e:
+        connection.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {e}")
+
+    finally:
+        cursor.close()
+        connection.close()    
+
+
+@app.post("/api/user/{user_id}/add_device")
+def add_device_to_user(user_id: int, assignment: DeviceAssignment):
+    """Assign an ESP32 device to a user."""
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    try:
+        # Check if the device is already assigned
+        cursor.execute("SELECT user_id FROM devices WHERE device_id = %s", (assignment.device_id,))
+        device = cursor.fetchone()
+
+        if device and device[0] is not None:
+            raise HTTPException(status_code=400, detail="Device is already assigned to another user.")
+
+        # Assign device to the user
+        cursor.execute("UPDATE devices SET user_id = %s WHERE device_id = %s", (user_id, assignment.device_id))
+        connection.commit()
+
+        return {"message": "Device successfully added to your profile"}
+
+    except Exception as e:
+        connection.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {e}")
+
+    finally:
+        cursor.close()
+        connection.close()
+
+
+@app.get("/profile", response_class=HTMLResponse)
+def signup_html(request: Request):
+    return HTMLResponse(content=read_html("app/static/profile.html"))
 
 
 if __name__ == "__main__":

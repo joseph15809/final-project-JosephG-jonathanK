@@ -9,7 +9,7 @@ import requests
 import time
 
 load_dotenv()
-url = "http://localhost:6543/api/temperature"
+url = "http://localhost:8000/api/temperature"
 BROKER = "broker.hivemq.com"
 PORT = 1883
 BASE_TOPIC = os.getenv("BASE_TOPIC")
@@ -42,20 +42,20 @@ def on_message(client, userdata, message):
             return
 
         if "temperature" in payload and now - last_sent_time >= 5:
-                temperature_data = {
+            temperature_data = {
                 "mac_address": mac_address,
                 "value": temperature,
                 "unit": "Celsius",
                 "timestamp": timestamp
             }
-        response = requests.post(url, json=temperature_data)
+            response = requests.post(url, json=temperature_data)
 
-        if response.status_code == 200:
-            print(f"[{timestamp}] Sent temperature: {payload['temperature']}°C")
-        else:
-            print(f"[ERROR] Failed to send data to server: {response.status_code}")
+            if response.status_code == 200:
+                print(f"[{timestamp}] Sent temperature: {payload['temperature']}°C")
+            else:
+                print(f"[ERROR] Failed to send data to server: {response.status_code}")
 
-        last_sent_time = now
+            last_sent_time = now
 
     except json.JSONDecodeError:
         print(f"[ERROR] Received non-JSON message on {message.topic}: {message.payload.decode()}")

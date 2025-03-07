@@ -31,25 +31,23 @@ void setup() {
     }
 
     // Connect to WiFi
-    // wifi.connectToWPAEnterprise(wifiSsid, ucsdUsername, ucsdPassword);
-    wifi.connectToWiFi(wifiSsid, nonEnterpriseWifiPassword);
+    wifi.connectToWPAEnterprise(wifiSsid, ucsdUsername, ucsdPassword);
+    // wifi.connectToWiFi(wifiSsid, nonEnterpriseWifiPassword);
 
 }
 
 void loop() {
     mqtt.loop();
     float tempValue = bmp.readTemperature();
-    float pressureValue = bmp.readPressure();
-
     String macAddress = wifi.macAddress();
 
     String payload = "{";
     payload += "\"temperature\":" + String(tempValue) + ",";
-    payload += "\"mac_address\":" + macAddress;
+    payload += "\"mac_address\":\"" + macAddress + "\"";
     payload += "}";
 
     mqtt.publishMessage("readings", payload);
 
-    // Delay for 2 seconds
-    delay(2000); 
+    // Delay for 5 seconds
+    delay(5000); 
 }

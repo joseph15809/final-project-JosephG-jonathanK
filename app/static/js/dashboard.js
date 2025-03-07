@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function(){
         deviceIds = devices;  // Store device IDs
         deviceIds.forEach(deviceId => {
             sensors.forEach(sensor => {
-                fetchSensorData(userId, deviceId, sensor);
+                fetchSensorData(sensor, deviceId, userId);
             });
         });
     });
@@ -32,8 +32,8 @@ function fetchDevices(userId) {
         });
 }
 
-function fetchSensorData(userId, deviceId, sensorType){
-    fetch(`/api/${userId}/${deviceId}/${sensorType}`)
+function fetchSensorData(sensorType, deviceId, userId){
+    fetch(`/api/${sensorType}/${userId}/${deviceId}`)
         .then(response => response.json())
         .then(data => {
             const timestamps = data.map(entry => entry.timestamp);
