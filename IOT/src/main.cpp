@@ -18,6 +18,8 @@ ECE140_WIFI wifi;
 void setup() {
     Serial.begin(115200);
     
+
+
     // Connect to BMP085 Sensor
     if (!bmp.begin()) {
         Serial.println("[Main] Could not find a valid BMP085 sensor");
@@ -31,6 +33,7 @@ void setup() {
     // Connect to WiFi
     // wifi.connectToWPAEnterprise(wifiSsid, ucsdUsername, ucsdPassword);
     wifi.connectToWiFi(wifiSsid, nonEnterpriseWifiPassword);
+
 }
 
 void loop() {
@@ -38,9 +41,11 @@ void loop() {
     float tempValue = bmp.readTemperature();
     float pressureValue = bmp.readPressure();
 
+    String macAddress = wifi.macAddress();
+
     String payload = "{";
     payload += "\"temperature\":" + String(tempValue) + ",";
-    payload += "\"pressure\":" + String(pressureValue);
+    payload += "\"mac_address\":" + macAddress;
     payload += "}";
 
     mqtt.publishMessage("readings", payload);

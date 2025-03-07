@@ -12,6 +12,7 @@ void ECE140_WIFI::connectToWiFi(String ssid, String password) {
     Serial.print(".");
   }
   Serial.println("\n[WiFi] Connected to WiFi.");
+  registerDevice();
 }
 
 void ECE140_WIFI::connectToWPAEnterprise(String ssid, String username, String password) {
@@ -44,3 +45,29 @@ void ECE140_WIFI::connectToWPAEnterprise(String ssid, String username, String pa
   dns_setserver(0, &dnsserver);
 }
 
+void ECE140_WIFI::registerDevice() {
+  HTTPClient http;
+  String serverURL = "http://localhost:8000/api/register_device";
+
+  http.begin(serverURL);
+  http.addHeader("Content-Type", "application/json");
+
+  String macAddress = WiFi.macAddress();
+  String payload = "{\"mac_address\": \"" + macAddress + "\"}";
+
+  int httpResponseCode = http.POST(payload);
+
+  if (httpResponseCode == 200) {
+      Serial.println("Device registered successfully!");
+  } else {
+      Serial.print("Error sending MAC to server: ");
+      Serial.println(httpResponseCode);
+  }
+
+  http.end();
+}
+
+
+String ECE140_WIFI::macAddress() {
+  return WiFi.macAddress();
+}

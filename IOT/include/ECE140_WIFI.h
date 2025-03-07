@@ -5,6 +5,7 @@
 #include <WiFi.h>
 #include "esp_wpa2.h"
 #include <WiFi.h>
+#include <HTTPClient.h>
 #include "esp_wifi.h"
 #include "esp_wpa2.h" // for WPA2 Enterprise
 #include <lwip/dns.h> // for DNS
@@ -39,6 +40,16 @@ public:
    */
   void connectToWPAEnterprise(String ssid, String username, String password);
 
+  /**
+   * @brief Registers the device to the database
+   */
+  void registerDevice();
+
+
+    /**
+   * @brief Returns the mac addres
+   */
+  String macAddress();
 };
 
 #endif

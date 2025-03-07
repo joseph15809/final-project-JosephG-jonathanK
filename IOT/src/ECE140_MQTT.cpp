@@ -37,6 +37,7 @@ bool ECE140_MQTT::publishMessage(String subtopic, String message) {
     
     if (_mqttClient->publish(fullTopic.c_str(), message.c_str())) {
         Serial.println("[MQTT] Message published successfully");
+        Serial.println(message);
         return true;
     } else {
         Serial.println("[MQTT] Failed to publish message");

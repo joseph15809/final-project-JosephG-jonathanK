@@ -84,8 +84,21 @@ async def setup_database():
                 device_id INT AUTO_INCREMENT PRIMARY KEY,
                 name VARCHAR(100) NOT NULL,
                 user_id INT NOT NULL,
+                mac_address VARCHAR(30) UNIQUE NOT NULL,
                 timestamp DATETIME NOT NULL,
                 FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+            )
+        """,
+        "temperature": """
+            CREATE TABLE IF NOT EXISTS temperature(
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            device_id INT NOT NULL,
+            value FLOAT NOT NULL,
+            unit VARCHAR(10) NOT NULL,
+            timestamp DATETIME NOT NULL,
+            FOREIGN KEY(device_id) REFERENCES devices(device_id) on DELETE CASCADE,
+            FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE
             )
         """,
         "wardrobe": """
