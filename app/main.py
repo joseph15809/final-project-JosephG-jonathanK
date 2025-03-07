@@ -144,6 +144,23 @@ async def logout(request: Request):
     response.delete_cookie("session_id")
     return response
 
+@app.get("/wardrobe/{user_id}", response_class=HTMLResponse)
+async def user_wardrobe(user_id: int, request: Request):
+    """Show user profile if authenticated, error if not"""
+    session_id = request.cookies.get("session_id")
+
+    if not session_id:
+        return RedirectResponse(url="/login", status_code=302)
+    
+    session = await get_session(session_id)
+    if not session:
+        return RedirectResponse(url="/login", status_code=302)
+    
+    user = await get_user_by_id(session["user_id"])
+    if not user or user["user_id"] != user_id:
+        return {"error": f"Not authenticated as {user['name']}"}
+
+    return HTMLResponse(content=read_html("app/static/wardrobe.html"))
 
 @app.get("/dashboard/{user_id}", response_class=HTMLResponse)
 async def user_page(user_id: int, request: Request):
@@ -162,7 +179,6 @@ async def user_page(user_id: int, request: Request):
         return {"error": f"Not authenticated as {user['name']}"}
 
     return HTMLResponse(content=read_html("app/static/dashboard.html"))
-
 
 if __name__ == "__main__":
    uvicorn.run(app="app.main:app", host="0.0.0.0", port=6543, reload=True)
