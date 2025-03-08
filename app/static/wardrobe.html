@@ -2,6 +2,7 @@
 <html>
   <head>
     <title>My Wardrobe</title>
+    <link rel="stylesheet" href="/static/css/wardrobe.css">
   </head>
   <body>
 
@@ -15,15 +16,15 @@
     </div>
     
     <div>
-      <form class="add-form" action="/wardrobe" method="post">
-        <select id="type" required>
+      <form class="add-form" action="/wardrobe/add" method="POST">
+        <select id="type" name="type" required>
             <option value="default">Type</option>
             <option value="shirt">Shirt</option>
             <option value="sweater">Sweater</option>
             <option value="shorts">Shorts</option>
             <option value="pants">Pants</option>
         </select>
-        <select id="color" required>
+        <select id="color" name="color" required>
             <option value="default">Color</option>
             <option value="black">Black</option>
             <option value="gray">Gray</option>

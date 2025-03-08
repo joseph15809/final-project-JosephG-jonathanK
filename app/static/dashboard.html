@@ -2,15 +2,21 @@
 <html>
   <head>
     <title>Dashboard</title>
+    <link rel="stylesheet" href="/static/css/dashboard.css">
   </head>
   <body>
 
-    <div class="header">
-      <h1 id="welcome-message">Welcome!</h1>
+    <span class = buttons>
+      <button id="dashboard-button">Dashboard</button>
+      <button id="profile-button">Profile</button>
       <form class="logout-form" action="/logout" method="POST">
-        <button class="logout-button" type="submit">Logout</button>
+        <button id="logout-button" type="submit">Logout</button>
       </form>
-    </div>
+    </span>
 
+    <div class="logo">
+        <h1>Welcome!</h1>
+    </div>
+    
   </body>
 </html>

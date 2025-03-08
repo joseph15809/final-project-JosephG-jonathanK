@@ -95,7 +95,6 @@ async def setup_database():
                 user_id INT NOT NULL,
                 type VARCHAR(100) NOT NULL,
                 color VARCHAR(100) NOT NULL,
-                size VARCHAR(100) NOT NULL,
                 FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
             )
         """,
@@ -169,6 +168,29 @@ async def add_user(name: str, email: str, password: str, location: str) -> int:
         if connection and connection.is_connected():
             connection.close()       
 
+async def add_clothes(name: str, user_id: int, type: str, color: str):
+    connection = None
+    cursor = None
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor()
+
+        cursor.execute(
+            "INSERT INTO wardrobe (name, user_id, type, color) VALUES (%s, %s, %s, %s)",
+            (name, user_id, type, color)
+        )
+        connection.commit()
+
+    except Exception as e:
+        if connection:
+            connection.rollback()  # Rollback on failure
+        raise Exception(f"Failed to insert user: {e}")
+
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()       
 
 async def get_user_by_email(email: str) -> Optional[dict]:
     """Retrieve user from database by email."""

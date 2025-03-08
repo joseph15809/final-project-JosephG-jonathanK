@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Response, HTTPException
+from fastapi import FastAPI, Request, Response, HTTPException, Form
 from fastapi.responses import Response, HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 import uvicorn
@@ -18,6 +18,7 @@ from .database import (
     get_session,
     delete_session,
     add_user,
+    add_clothes
 )
 
 @asynccontextmanager
@@ -144,8 +145,8 @@ async def logout(request: Request):
     response.delete_cookie("session_id")
     return response
 
-@app.get("/wardrobe/{user_id}", response_class=HTMLResponse)
-async def user_wardrobe(user_id: int, request: Request):
+@app.get("/wardrobe", response_class=HTMLResponse)
+async def user_wardrobe(request: Request):
     """Show user profile if authenticated, error if not"""
     session_id = request.cookies.get("session_id")
 
@@ -156,11 +157,43 @@ async def user_wardrobe(user_id: int, request: Request):
     if not session:
         return RedirectResponse(url="/login", status_code=302)
     
-    user = await get_user_by_id(session["user_id"])
-    if not user or user["user_id"] != user_id:
-        return {"error": f"Not authenticated as {user['name']}"}
+    user_id = session["user_id"]
+    if not user_id:
+        return RedirectResponse(url="/login", status_code=302)
+        
+    user = await get_user_by_id(user_id)
+    if not user:
+        return {"error": "User not found"}
 
     return HTMLResponse(content=read_html("app/static/wardrobe.html"))
+
+@app.post("/wardrobe/add")
+async def add_to_wardrobe(request: Request):
+
+    # get form data
+    form_data = await request.form()
+    type = form_data.get("type")
+    color = form_data.get("color")
+
+    session_id = request.cookies.get("session_id")
+
+    if not session_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    session = await get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    user_id = session["user_id"]
+    user = await get_user_by_id(user_id)
+    name = user["name"]
+
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    await add_clothes(name, user_id, type, color)
+
+    return RedirectResponse(url="/wardrobe", status_code=303)
 
 @app.get("/dashboard/{user_id}", response_class=HTMLResponse)
 async def user_page(user_id: int, request: Request):
