@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, Response, HTTPException, Form
-from fastapi.responses import Response, HTMLResponse, RedirectResponse
+from fastapi.responses import Response, HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 import uvicorn
 import os
@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from datetime import datetime
 
 from .database import (
+    get_db_connection,
     setup_database,
     get_user_by_email,
     get_user_by_id,
@@ -18,7 +19,8 @@ from .database import (
     get_session,
     delete_session,
     add_user,
-    add_clothes
+    add_clothes,
+    remove_clothes
 )
 
 @asynccontextmanager
@@ -185,8 +187,7 @@ async def add_to_wardrobe(request: Request):
         raise HTTPException(status_code=401, detail="Not authenticated")
     
     user_id = session["user_id"]
-    user = await get_user_by_id(user_id)
-    name = user["name"]
+    name = color + ' ' + type
 
     if not user_id:
         raise HTTPException(status_code=401, detail="Not authenticated")
@@ -194,6 +195,69 @@ async def add_to_wardrobe(request: Request):
     await add_clothes(name, user_id, type, color)
 
     return RedirectResponse(url="/wardrobe", status_code=303)
+
+@app.post("/wardrobe/remove")
+async def remove_from_wardrobe(request: Request):
+
+    # get form data
+    form_data = await request.form()
+    name = form_data.get("remove-list")
+
+    session_id = request.cookies.get("session_id")
+
+    if not session_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    session = await get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    user_id = session["user_id"]
+
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    await remove_clothes(name, user_id)
+
+    return RedirectResponse(url="/wardrobe", status_code=303)
+
+@app.get("/api/wardrobe")
+async def get_wardrobe(request: Request):
+    """Get wardrobe data"""
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    session_id = request.cookies.get("session_id")
+
+    if not session_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    session = await get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    user_id = session["user_id"]
+    
+    try:
+        cursor.execute("SELECT * FROM wardrobe WHERE user_id = %s", (user_id,))
+        data = cursor.fetchall()
+        wardrobe_data = []
+        for item in data:
+            wardrobe_data.append({
+                "id": item[0],
+                "name": item[1],
+                "user_id": item[2],
+                "type": item[3],
+                "color": item[4]
+            })
+
+        return JSONResponse(wardrobe_data, status_code=200)
+    except Exception as e:
+        connection.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {e}")
+    finally:
+        cursor.close()
+        connection.close()   
 
 @app.get("/dashboard/{user_id}", response_class=HTMLResponse)
 async def user_page(user_id: int, request: Request):

@@ -18,29 +18,62 @@
     <div>
       <form class="add-form" action="/wardrobe/add" method="POST">
         <select id="type" name="type" required>
-            <option value="default">Type</option>
-            <option value="shirt">Shirt</option>
-            <option value="sweater">Sweater</option>
-            <option value="shorts">Shorts</option>
-            <option value="pants">Pants</option>
+            <option value="Default">Type</option>
+            <option value="Shirt">Shirt</option>
+            <option value="Sweater">Sweater</option>
+            <option value="Shorts">Shorts</option>
+            <option value="Pants">Pants</option>
         </select>
         <select id="color" name="color" required>
-            <option value="default">Color</option>
-            <option value="black">Black</option>
-            <option value="gray">Gray</option>
-            <option value="brown">Brown</option>
-            <option value="red">Red</option>
-            <option value="orange">Orange</option>
-            <option value="yellow">Yellow</option>
-            <option value="green">Green</option>
-            <option value="blue">Blue</option>
-            <option value="purple">Purple</option>
-            <option value="pink">Pink</option>
-            <option value="white">White</option>
+            <option value="Default">Color</option>
+            <option value="Black">Black</option>
+            <option value="Gray">Gray</option>
+            <option value="Brown">Brown</option>
+            <option value="Red">Red</option>
+            <option value="Orange">Orange</option>
+            <option value="Yellow">Yellow</option>
+            <option value="Green">Green</option>
+            <option value="Blue">Blue</option>
+            <option value="Purple">Purple</option>
+            <option value="Pink">Pink</option>
+            <option value="White">White</option>
         </select>
         <button id="add-button" type="submit">Add Clothes</button>
       </form>
     </div>
 
+    <div>
+        <form class="remove-form" action="/wardrobe/remove" method="POST">
+            <select id="remove-list" name="remove-list">
+                <option value="">Loading items...</option>
+            </select>
+            <button id="remove-button" type="submit">Remove Clothes</button>
+        </form>
+    </div>
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            fetch("/api/wardrobe", {
+                method: "GET"
+            })
+            .then(response => response.json())
+            .then(data => {
+                let removeList = document.getElementById("remove-list");
+                removeList.innerHTML = "";
+                data.forEach(item => {
+                    const option = document.createElement("option");
+                    let optionString = "";
+                    optionString = "<option value='" + item.name + "'>" + item.name + "</option>";
+                    option.innerHTML = optionString;
+                    removeList.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error("Error fetching wardrobe items");
+                removeList.innerHTML = "<option value=''>Error loading items</option>";
+            });
+        });
+    </script>
   </body>
 </html>

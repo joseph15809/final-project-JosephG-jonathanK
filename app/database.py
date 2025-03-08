@@ -184,13 +184,37 @@ async def add_clothes(name: str, user_id: int, type: str, color: str):
     except Exception as e:
         if connection:
             connection.rollback()  # Rollback on failure
-        raise Exception(f"Failed to insert user: {e}")
+        raise Exception(f"Failed to insert item: {e}")
 
     finally:
         if cursor:
             cursor.close()
         if connection and connection.is_connected():
-            connection.close()       
+            connection.close()
+            
+async def remove_clothes(name: str, user_id: int):
+    connection = None
+    cursor = None
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor()
+
+        cursor.execute(
+            "DELETE FROM wardrobe WHERE name=%s AND user_id=%s",
+            (name, user_id)
+        )
+        connection.commit()
+
+    except Exception as e:
+        if connection:
+            connection.rollback()  # Rollback on failure
+        raise Exception(f"Failed to delete item: {e}")
+
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()              
 
 async def get_user_by_email(email: str) -> Optional[dict]:
     """Retrieve user from database by email."""
