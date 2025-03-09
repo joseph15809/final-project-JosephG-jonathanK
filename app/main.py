@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Response, HTTPException, Form
+from fastapi import FastAPI, Request, Response, HTTPException
 from fastapi.responses import Response, HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 import uvicorn
@@ -101,7 +101,7 @@ async def login_html(request: Request):
         if session:
             user = await get_user_by_id(session["user_id"])
             if user:
-                return RedirectResponse(url=f"/dashboard/{user['user_id']}", status_code=302)
+                return RedirectResponse(url=f"/dashboard", status_code=302)
     return HTMLResponse(content=read_html("app/static/login.html"))
 
 
@@ -261,7 +261,7 @@ async def get_wardrobe(request: Request):
 
 @app.get("/dashboard", response_class=HTMLResponse)
 async def user_page(request: Request):
-    """Show user profile if authenticated, error if not"""
+    """Show user dashboard if authenticated, error if not"""
     session_id = request.cookies.get("session_id")
 
     if not session_id:

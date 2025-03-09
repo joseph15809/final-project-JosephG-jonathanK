@@ -1,9 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const dashboardBtn = document.getElementById("dashboard-button");
+    const wardrobeBtn = document.getElementById("wardrobe-button");
     const profileBtn = document.getElementById("profile-button");
 
-    dashboardBtn.addEventListener("click", () => {
-        window.location.href = "/dashboard";
+    wardrobeBtn.addEventListener("click", () => {
+        window.location.href = "/wardrobe";
     });
 
     profileBtn.addEventListener("click", () => {
