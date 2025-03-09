@@ -12,20 +12,18 @@
     </span>
 
     <div class="logo">
-        <h1>My Wardrobe</h1>
+        <h1>Wardrobe</h1>
     </div>
     
     <div>
       <form class="add-form" action="/wardrobe/add" method="POST">
         <select id="type" name="type" required>
-            <option value="Default">Type</option>
             <option value="Shirt">Shirt</option>
             <option value="Sweater">Sweater</option>
             <option value="Shorts">Shorts</option>
             <option value="Pants">Pants</option>
         </select>
         <select id="color" name="color" required>
-            <option value="Default">Color</option>
             <option value="Black">Black</option>
             <option value="Gray">Gray</option>
             <option value="Brown">Brown</option>
@@ -51,7 +49,14 @@
         </form>
     </div>
 
+    <div>
+        <h2>My Clothes</h2>
+        <span class="clothes-list" id="clothes-list">
+            <p>No Clothes</p>
+        </span>
+    </div>
 
+    <script src="/static/js/wardrobe.js" defer></script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             fetch("/api/wardrobe", {
@@ -60,18 +65,26 @@
             .then(response => response.json())
             .then(data => {
                 let removeList = document.getElementById("remove-list");
+                let clothesList = document.getElementById("clothes-list");
                 removeList.innerHTML = "";
+                clothesList.innerHTML = "";
                 data.forEach(item => {
                     const option = document.createElement("option");
+                    const clothes = document.createElement("p");
                     let optionString = "";
+                    let clothesString = "";
                     optionString = "<option value='" + item.name + "'>" + item.name + "</option>";
+                    clothesString = "<p>" + item.name + "</p>";
                     option.innerHTML = optionString;
+                    clothes.innerHTML = clothesString;
                     removeList.appendChild(option);
+                    clothesList.appendChild(clothes);
                 });
             })
             .catch(error => {
                 console.error("Error fetching wardrobe items");
                 removeList.innerHTML = "<option value=''>Error loading items</option>";
+                clothesList.innerHTML = "<p>Error loading clothes</p>";
             });
         });
     </script>

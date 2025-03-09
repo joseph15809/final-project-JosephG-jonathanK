@@ -79,7 +79,7 @@ async def signup(request: Request):
         return {"error": f"Signup failed: {e}"}
 
     # Set cookie with session ID
-    response = RedirectResponse(url=f"/dashboard/{user_id}", status_code=302)
+    response = RedirectResponse(url=f"/dashboard", status_code=302)
     response.set_cookie(
         key="session_id",
         value=session_id,
@@ -122,7 +122,7 @@ async def login(request: Request):
     await create_session(user["user_id"], session_id)
 
     # Set cookie with session ID
-    response = RedirectResponse(url=f"/dashboard/{user['user_id']}", status_code=302)
+    response = RedirectResponse(url=f"/dashboard", status_code=302)
     response.set_cookie(
         key="session_id",
         value=session_id,
@@ -259,8 +259,8 @@ async def get_wardrobe(request: Request):
         cursor.close()
         connection.close()   
 
-@app.get("/dashboard/{user_id}", response_class=HTMLResponse)
-async def user_page(user_id: int, request: Request):
+@app.get("/dashboard", response_class=HTMLResponse)
+async def user_page(request: Request):
     """Show user profile if authenticated, error if not"""
     session_id = request.cookies.get("session_id")
 
@@ -271,11 +271,17 @@ async def user_page(user_id: int, request: Request):
     if not session:
         return RedirectResponse(url="/login", status_code=302)
 
-    user = await get_user_by_id(session["user_id"])
-    if not user or user["user_id"] != user_id:
-        return {"error": f"Not authenticated as {user['name']}"}
+    user_id = session["user_id"]
+    if not user_id:
+        return RedirectResponse(url="/login", status_code=302)
+    
+    user = await get_user_by_id(user_id)
+    if not user:
+        return {"error": "User not found"}
 
     return HTMLResponse(content=read_html("app/static/dashboard.html"))
 
 if __name__ == "__main__":
    uvicorn.run(app="app.main:app", host="0.0.0.0", port=6543, reload=True)
+
+   
