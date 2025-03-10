@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 const sensor  = "temperature";
 document.addEventListener("DOMContentLoaded", function(){
     fetch(`/api/getId`)
@@ -90,3 +91,17 @@ function createChart(chartId, labels, data){
 
 
 
+=======
+document.addEventListener("DOMContentLoaded", () => {
+    const wardrobeBtn = document.getElementById("wardrobe-button");
+    const profileBtn = document.getElementById("profile-button");
+
+    wardrobeBtn.addEventListener("click", () => {
+        window.location.href = "/wardrobe";
+    });
+
+    profileBtn.addEventListener("click", () => {
+        window.location.href = "/profile";
+    });
+});
+>>>>>>> wardrobe

@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 from fastapi import FastAPI, Request, Response, HTTPException, Query
 from fastapi.responses import Response, HTMLResponse, RedirectResponse
+=======
+from fastapi import FastAPI, Request, Response, HTTPException
+from fastapi.responses import Response, HTMLResponse, RedirectResponse, JSONResponse
+>>>>>>> wardrobe
 from fastapi.staticfiles import StaticFiles
 import uvicorn
 import os
@@ -11,6 +16,7 @@ from pydantic import BaseModel
 from datetime import datetime
 
 from .database import (
+    get_db_connection,
     setup_database,
     get_user_by_email,
     get_user_by_id,
@@ -18,9 +24,14 @@ from .database import (
     get_session,
     delete_session,
     add_user,
+<<<<<<< HEAD
     get_db_connection,
     add_temperature,
     clear_database
+=======
+    add_clothes,
+    remove_clothes
+>>>>>>> wardrobe
 )
 
 @asynccontextmanager
@@ -94,7 +105,11 @@ async def signup(request: Request):
         return {"error": f"Signup failed: {e}"}
 
     # Set cookie with session ID
+<<<<<<< HEAD
     response = RedirectResponse(url="/dashboard", status_code=302)
+=======
+    response = RedirectResponse(url=f"/dashboard", status_code=302)
+>>>>>>> wardrobe
     response.set_cookie(
         key="session_id",
         value=session_id,
@@ -116,7 +131,11 @@ async def login_html(request: Request):
         if session:
             user = await get_user_by_id(session["user_id"])
             if user:
+<<<<<<< HEAD
                 return RedirectResponse(url="/dashboard", status_code=302)
+=======
+                return RedirectResponse(url=f"/dashboard", status_code=302)
+>>>>>>> wardrobe
     return HTMLResponse(content=read_html("app/static/login.html"))
 
 
@@ -137,7 +156,11 @@ async def login(request: Request):
     await create_session(user["user_id"], session_id)
 
     # Set cookie with session ID
+<<<<<<< HEAD
     response = RedirectResponse(url="/dashboard", status_code=302)
+=======
+    response = RedirectResponse(url=f"/dashboard", status_code=302)
+>>>>>>> wardrobe
     response.set_cookie(
         key="session_id",
         value=session_id,
@@ -162,10 +185,127 @@ async def logout(request: Request):
     response.delete_cookie("session_id")
     return response
 
+<<<<<<< HEAD
 
 @app.get("/dashboard", response_class=HTMLResponse)
 async def user_dashboard(request: Request):
+=======
+@app.get("/wardrobe", response_class=HTMLResponse)
+async def user_wardrobe(request: Request):
+>>>>>>> wardrobe
     """Show user profile if authenticated, error if not"""
+    session_id = request.cookies.get("session_id")
+
+    if not session_id:
+        return RedirectResponse(url="/login", status_code=302)
+    
+    session = await get_session(session_id)
+    if not session:
+        return RedirectResponse(url="/login", status_code=302)
+    
+    user_id = session["user_id"]
+    if not user_id:
+        return RedirectResponse(url="/login", status_code=302)
+        
+    user = await get_user_by_id(user_id)
+    if not user:
+        return {"error": "User not found"}
+
+    return HTMLResponse(content=read_html("app/static/wardrobe.html"))
+
+@app.post("/wardrobe/add")
+async def add_to_wardrobe(request: Request):
+
+    # get form data
+    form_data = await request.form()
+    type = form_data.get("type")
+    color = form_data.get("color")
+
+    session_id = request.cookies.get("session_id")
+
+    if not session_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    session = await get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    user_id = session["user_id"]
+    name = color + ' ' + type
+
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    await add_clothes(name, user_id, type, color)
+
+    return RedirectResponse(url="/wardrobe", status_code=303)
+
+@app.post("/wardrobe/remove")
+async def remove_from_wardrobe(request: Request):
+
+    # get form data
+    form_data = await request.form()
+    name = form_data.get("remove-list")
+
+    session_id = request.cookies.get("session_id")
+
+    if not session_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    session = await get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    user_id = session["user_id"]
+
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    await remove_clothes(name, user_id)
+
+    return RedirectResponse(url="/wardrobe", status_code=303)
+
+@app.get("/api/wardrobe")
+async def get_wardrobe(request: Request):
+    """Get wardrobe data"""
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    session_id = request.cookies.get("session_id")
+
+    if not session_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    session = await get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    user_id = session["user_id"]
+    
+    try:
+        cursor.execute("SELECT * FROM wardrobe WHERE user_id = %s", (user_id,))
+        data = cursor.fetchall()
+        wardrobe_data = []
+        for item in data:
+            wardrobe_data.append({
+                "id": item[0],
+                "name": item[1],
+                "user_id": item[2],
+                "type": item[3],
+                "color": item[4]
+            })
+
+        return JSONResponse(wardrobe_data, status_code=200)
+    except Exception as e:
+        connection.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {e}")
+    finally:
+        cursor.close()
+        connection.close()   
+
+@app.get("/dashboard", response_class=HTMLResponse)
+async def user_page(request: Request):
+    """Show user dashboard if authenticated, error if not"""
     session_id = request.cookies.get("session_id")
 
     if not session_id:
@@ -176,9 +316,18 @@ async def user_dashboard(request: Request):
         return RedirectResponse(url="/login", status_code=302)
 
     user_id = session["user_id"]
+<<<<<<< HEAD
     user = await get_user_by_id(user_id)
     if not user or user["user_id"] != user_id:
         return {"error": f"Not authenticated as {user['name']}"}
+=======
+    if not user_id:
+        return RedirectResponse(url="/login", status_code=302)
+    
+    user = await get_user_by_id(user_id)
+    if not user:
+        return {"error": "User not found"}
+>>>>>>> wardrobe
 
     return HTMLResponse(content=read_html("app/static/dashboard.html"))
     
@@ -364,6 +513,11 @@ async def signup_html(request: Request):
             return HTMLResponse(content=read_html("app/static/profile.html"))
     return RedirectResponse(url="/login", status_code=302)
 
-
 if __name__ == "__main__":
+<<<<<<< HEAD
     uvicorn.run(app="app.main:app", host="0.0.0.0", port=8000, reload=True)
+=======
+   uvicorn.run(app="app.main:app", host="0.0.0.0", port=6543, reload=True)
+
+   
+>>>>>>> wardrobe
