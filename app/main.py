@@ -46,7 +46,6 @@ class SensorData(BaseModel):
     unit: str
     timestamp: str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-valid_sensor = {"temperature"}
 
 class DeviceRegistration(BaseModel):
     mac_address: str
@@ -214,20 +213,15 @@ def register_device(device: DeviceRegistration):
         connection.close()
 
 
-@app.get("/api/{uesr_id}/{mac_address}/{sensor_type}")
-def get_all_sensor_data(user_id: int,
-                        mac_address: str,
-                        sensor_type: str,
+@app.get("/api/temperature/{mac_address}")
+def get_all_sensor_data(mac_address: str,
                         order_by: str = Query(None, alias="order-by"),
                         start_date: str = Query(None, alias="start-date"),
                         end_date: str = Query(None, alias="end-date")):
 
-    if sensor_type not in valid_sensor:
-        raise HTTPException(status_code=404, detail="invalid sensor type")
-
-    query = f"SELECT * FROM {sensor_type}"
-    condition = ["user_id = %s", "mac_address = %s"]
-    params = [user_id, mac_address]
+    query = f"SELECT * FROM temperature"
+    condition = ["mac_address = %s"]
+    params = [mac_address]
 
     if start_date:
         condition.append("timestamp >= %s")

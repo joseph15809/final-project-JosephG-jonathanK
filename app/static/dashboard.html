@@ -2,20 +2,22 @@
 <html>
   <head>
     <title>Dashboard</title>
-    </head>
-    <body>
-    <div class="header">
-      <h1 id="welcome-message">Welcome!</h1>
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+  </head>
+  <body>
+  <div class="header">
+    <h1 id="welcome-message">Welcome!</h1>
 
-      <h2>ESP32 Temperature Data</h2>
-      <canvas id="temperatureChart"></canvas>
+    <h2>ESP32 Temperature Data</h2>
+    <div id="charts-container"></div>
 
-      <form class="logout-form" action="/logout" method="POST">
-        <button class="logout-button" type="submit">Logout</button>
-      </form>
-    </div>
-    <a href="/profile">Profile</a>
-    <button id="wardrobe">wardrobe</button>
-    <script defer src="/static/js/dashboard.js"></script>
+    <form class="logout-form" action="/logout" method="POST">
+      <button class="logout-button" type="submit">Logout</button>
+    </form>
+  </div>
+  <a href="/profile">Profile</a>
+  <button id="wardrobe">wardrobe</button>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script defer src="/static/js/dashboard.js"></script>
   </body>
 </html>

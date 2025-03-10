@@ -82,6 +82,7 @@ async def setup_database():
         "devices": """
             CREATE TABLE IF NOT EXISTS devices (
                 device_id INT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(100) DEFAULT NULL,
                 user_id INT DEFAULT NULL,
                 mac_address VARCHAR(30) UNIQUE NOT NULL,
                 FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
