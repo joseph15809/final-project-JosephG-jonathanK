@@ -82,7 +82,6 @@ async def setup_database():
         "devices": """
             CREATE TABLE IF NOT EXISTS devices (
                 device_id INT AUTO_INCREMENT PRIMARY KEY,
-                name VARCHAR(100) DEFAULT NULL,
                 user_id INT DEFAULT NULL,
                 mac_address VARCHAR(30) UNIQUE NOT NULL,
                 FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
@@ -96,14 +95,13 @@ async def setup_database():
                 value FLOAT NOT NULL,
                 unit VARCHAR(10) NOT NULL,
                 timestamp DATETIME NOT NULL,
-                FOREIGN KEY(device_id) REFERENCES devices(device_id) on DELETE CASCADE,
-                FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE
+                FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+                FOREIGN KEY(mac_address) REFERENCES devices(mac_address) ON DELETE CASCADE
             )
         """,
         "wardrobe": """
             CREATE TABLE IF NOT EXISTS wardrobe (
                 id INT AUTO_INCREMENT PRIMARY KEY,
-                name VARCHAR(100) NOT NULL,
                 user_id INT NOT NULL,
                 type VARCHAR(100) NOT NULL,
                 color VARCHAR(100) NOT NULL,
@@ -281,6 +279,40 @@ async def delete_session(session_id: str) -> bool:
             connection.close()
 
 
+
+async def add_temperature(mac_address: str, value: float, unit: str, timestamp: str) -> int:
+    """Insert a new user into the database and return the user ID."""
+    connection = None
+    cursor = None
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor()
+
+        cursor.execute(
+            "INSERT INTO temperature (mac_address, value, unit, timestamp) VALUES (%s, %s, %s, %s)",
+            (mac_address, value, unit, timestamp)
+        )
+        connection.commit()
+
+        # Get the user_id of the newly created user
+        cursor.execute("SELECT LAST_INSERT_ID()")
+        user_id = cursor.fetchone()[0]
+
+        return user_id  # Return the newly created user ID
+
+    except Exception as e:
+        if connection:
+            connection.rollback()  # Rollback on failure
+        raise Exception(f"Failed to insert user: {e}")
+
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()   
+
+
+
 def clear_database():
     """Deletes all data from all tables."""
     connection = get_db_connection()
@@ -304,5 +336,34 @@ def clear_database():
         cursor.close()
         connection.close()
 
-# Run the cleanup
-clear_database()
+def delete_all_tables():
+    """Deletes all tables from the database."""
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    try:
+        # Disable foreign key checks to avoid constraint issues
+        cursor.execute("SET FOREIGN_KEY_CHECKS = 0;")
+
+        # Retrieve all table names
+        cursor.execute("SHOW TABLES;")
+        tables = cursor.fetchall()
+
+        for table in tables:
+            table_name = table[0]
+            print(f"Dropping table: {table_name}")
+            cursor.execute(f"DROP TABLE IF EXISTS {table_name};")
+
+        # Re-enable foreign key checks
+        cursor.execute("SET FOREIGN_KEY_CHECKS = 1;")
+
+        connection.commit()
+        print("All tables deleted successfully.")
+
+    except Error as e:
+        print(f"Error deleting tables: {e}")
+        connection.rollback()
+
+    finally:
+        cursor.close()
+        connection.close()

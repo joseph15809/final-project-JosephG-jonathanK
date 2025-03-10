@@ -1,23 +1,26 @@
 document.addEventListener("DOMContentLoaded", function(){
-    const sensors  = "temperature";
+    const sensor  = "temperature";
     let deviceIds = [];
 
-    const pathSegments = window.location.pathname.split("/");
-    const user_id = pathSegments[pathSegments.length - 1];  // Get the last part of the URL
+    
 
     fetchDevices(userId).then(devices => {
         deviceIds = devices;  // Store device IDs
         deviceIds.forEach(deviceId => {
-            sensors.forEach(sensor => {
-                fetchSensorData(sensor, deviceId, userId);
-            });
+            fetchSensorData(sensor, deviceId, userId);
         });
     });
+    document.getElementById("wardrobe").addEventListener("click", function(event){
+        event.preventDefault();
+        window.location.href = `/wardrobe/${userId}`;
+    });
+
 });
+
 
 // Function to fetch devices for a user
 function fetchDevices(userId) {
-    return fetch(`/api/deives/${userId}`)
+    fetch(`/api/devices/${userId}`)
         .then(response => response.json())
         .then(data => {
             if (!data.devices || data.devices.length === 0) {
@@ -68,3 +71,6 @@ function createChart(sensorType, labels, data){
         }
     });
 }
+
+
+

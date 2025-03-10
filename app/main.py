@@ -19,6 +19,8 @@ from .database import (
     delete_session,
     add_user,
     get_db_connection,
+    add_temperature,
+    clear_database
 )
 
 @asynccontextmanager
@@ -31,6 +33,7 @@ async def lifespan(app: FastAPI):
     try:
         await setup_database() 
         print("Database setup completed")
+
         yield
     finally:
         print("Shutdown completed")
@@ -49,6 +52,7 @@ class DeviceRegistration(BaseModel):
     mac_address: str
 
 class DeviceAssignment(BaseModel):
+    user_id: int
     device_id: int   
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
@@ -91,11 +95,11 @@ async def signup(request: Request):
         return {"error": f"Signup failed: {e}"}
 
     # Set cookie with session ID
-    response = RedirectResponse(url=f"/dashboard/{user_id}", status_code=302)
+    response = RedirectResponse(url="/dashboard", status_code=302)
     response.set_cookie(
         key="session_id",
         value=session_id,
-        max_age=3600,  # 1 hour session expiry
+        max_age=86400,  # 1 day session expiry
         httponly=True,  # Prevent JavaScript access
         secure=True,  # Send only over HTTPS
     )
@@ -113,7 +117,7 @@ async def login_html(request: Request):
         if session:
             user = await get_user_by_id(session["user_id"])
             if user:
-                return RedirectResponse(url=f"/dashboard/{user['user_id']}", status_code=302)
+                return RedirectResponse(url="/dashboard", status_code=302)
     return HTMLResponse(content=read_html("app/static/login.html"))
 
 
@@ -134,11 +138,11 @@ async def login(request: Request):
     await create_session(user["user_id"], session_id)
 
     # Set cookie with session ID
-    response = RedirectResponse(url=f"/dashboard/{user['user_id']}", status_code=302)
+    response = RedirectResponse(url="/dashboard", status_code=302)
     response.set_cookie(
         key="session_id",
         value=session_id,
-        max_age=3600,  # 1 hour session expiry
+        max_age=86400,  # 1 day session expiry
         httponly=True,  # Prevent JavaScript access
         secure=True,  # Send only over HTTPS
     )
@@ -160,8 +164,8 @@ async def logout(request: Request):
     return response
 
 
-@app.get("/dashboard/{user_id}", response_class=HTMLResponse)
-async def user_page(user_id: int, request: Request):
+@app.get("/dashboard", response_class=HTMLResponse)
+async def user_dashboard(request: Request):
     """Show user profile if authenticated, error if not"""
     session_id = request.cookies.get("session_id")
 
@@ -172,7 +176,8 @@ async def user_page(user_id: int, request: Request):
     if not session:
         return RedirectResponse(url="/login", status_code=302)
 
-    user = await get_user_by_id(session["user_id"])
+    user_id = session["user_id"]
+    user = await get_user_by_id(user_id)
     if not user or user["user_id"] != user_id:
         return {"error": f"Not authenticated as {user['name']}"}
 
@@ -207,37 +212,6 @@ def register_device(device: DeviceRegistration):
     finally:
         cursor.close()
         connection.close()
-
-
-@app.get("/api/devices/{user_id}")
-def get_user_devices(user_id: int):
-    """Retrieve all devices registered to a specific user."""
-    
-    connection = get_db_connection()
-    cursor = connection.cursor(dictionary=True)
-
-    try:
-        # Fetch all devices linked to the user
-        cursor.execute("""
-            SELECT device_id, mac_address, name, timestamp
-            FROM devices
-            WHERE user_id = %s
-        """, (user_id,))
-        
-        devices = cursor.fetchall()
-
-        if not devices:
-            raise HTTPException(status_code=404, detail="No devices found for this user.")
-
-        return {"devices": devices}
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {e}")
-
-    finally:
-        cursor.close()
-        connection.close()
-
 
 
 @app.get("/api/{uesr_id}/{mac_address}/{sensor_type}")
@@ -281,31 +255,37 @@ def get_all_sensor_data(user_id: int,
 
 
 @app.post("/api/temperature")
-def insert_sensor_data(data: SensorData):
+async def insert_sensor_data(data: SensorData):
+    try:
+        new_id = await add_temperature(data.mac_address, data.value, data.unit, data.timestamp)
 
-    connection = get_db_connection()
-    cursor = connection.cursor(dictionary=True)
-    cursor.execute(f"INSERT INTO temperature (mac_address, value, unit, timestamp) VALUES (%s, %s, %s, %s)", 
-                                            (data.mac_address, data.value, data.unit, data.timestamp))
-    connection.commit()
-    new_id = cursor.lastrowid
-    cursor.close()
-    connection.close()
+    except Exception as e:
+        return {"error": f"adding data failed: {e}"}
 
     return {"id": new_id}
 
 
-@app.get("/api/user/{user_id}/devices")
+@app.get("/api/devices/{user_id}")
 def get_user_devices(user_id: int):
-    """Retrieve all ESP32 devices registered to a specific user."""
+    """Retrieve all devices registered to a specific user."""
+    
     connection = get_db_connection()
     cursor = connection.cursor(dictionary=True)
 
     try:
-        cursor.execute("SELECT device_id, mac_address, name FROM devices WHERE user_id = %s", (user_id))
+        # Fetch all devices linked to the user
+        cursor.execute("""
+            SELECT device_id, mac_address, name
+            FROM devices
+            WHERE user_id = %s
+        """, (user_id,))
+        
         devices = cursor.fetchall()
 
-        return {"user_id": user_id, "devices": devices}
+        if not devices:
+            raise HTTPException(status_code=404, detail="No devices found for this user.")
+
+        return {"devices": devices}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database error: {e}")
@@ -315,17 +295,17 @@ def get_user_devices(user_id: int):
         connection.close()
 
 
-@app.get("api/devices")
+@app.get("/api/devices")
 def get_devices():
     """Get avialable an ESP32 device to a user."""
     connection = get_db_connection()
-    cursor = connection.cursor()
+    cursor = connection.cursor(dictionary=True)
 
     try:
-        cursor.execute("SELECT device_id FROM devices WHERE user_id = %s", ('NULL'))
-        devices = cursor.fetchone()
+        cursor.execute("SELECT * FROM devices WHERE user_id IS NULL")
+        devices = cursor.fetchall()
 
-        return devices
+        return {"devices": devices}
 
     except Exception as e:
         connection.rollback()
@@ -336,8 +316,8 @@ def get_devices():
         connection.close()    
 
 
-@app.post("/api/user/{user_id}/add_device")
-def add_device_to_user(user_id: int, assignment: DeviceAssignment):
+@app.post("/api/add_device")
+def add_device_to_user(assignment: DeviceAssignment):
     """Assign an ESP32 device to a user."""
     connection = get_db_connection()
     cursor = connection.cursor()
@@ -351,7 +331,7 @@ def add_device_to_user(user_id: int, assignment: DeviceAssignment):
             raise HTTPException(status_code=400, detail="Device is already assigned to another user.")
 
         # Assign device to the user
-        cursor.execute("UPDATE devices SET user_id = %s WHERE device_id = %s", (user_id, assignment.device_id))
+        cursor.execute("UPDATE devices SET user_id = %s WHERE device_id = %s", (assignment.user_id, assignment.device_id))
         connection.commit()
 
         return {"message": "Device successfully added to your profile"}
@@ -364,11 +344,32 @@ def add_device_to_user(user_id: int, assignment: DeviceAssignment):
         cursor.close()
         connection.close()
 
+@app.get("/api/getId")
+async def get_user_id(request: Request):
+    session_id = request.cookies.get("session_id")
+    if session_id:
+        session = await get_session(session_id)
+        if session:
+            user_id = session["user_id"]
+            user = await get_user_by_id(user_id)
+            if not user or user["user_id"] != user_id:
+                return {"error": f"Not authenticated as {user['name']}"}
+            return {"user_id":user_id}    
+    return{"error":"Could not get user id"}
 
 @app.get("/profile", response_class=HTMLResponse)
-def signup_html(request: Request):
-    return HTMLResponse(content=read_html("app/static/profile.html"))
+async def signup_html(request: Request):
+    session_id = request.cookies.get("session_id")
+    if session_id:
+        session = await get_session(session_id)
+        if session:
+            user_id = session["user_id"]
+            user = await get_user_by_id(user_id)
+            if not user or user["user_id"] != user_id:
+                return {"error": f"Not authenticated as {user['name']}"}
+            return HTMLResponse(content=read_html("app/static/profile.html"))
+    return RedirectResponse(url="/login", status_code=302)
 
 
 if __name__ == "__main__":
-   uvicorn.run(app="app.main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run(app="app.main:app", host="0.0.0.0", port=8000, reload=True)

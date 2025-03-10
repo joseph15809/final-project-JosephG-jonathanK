@@ -19,7 +19,6 @@ void setup() {
     Serial.begin(115200);
     
 
-
     // Connect to BMP085 Sensor
     if (!bmp.begin()) {
         Serial.println("[Main] Could not find a valid BMP085 sensor");
@@ -37,7 +36,7 @@ void setup() {
 }
 
 void loop() {
-    mqtt.loop();
+    mqtt.loop();    
     float tempValue = bmp.readTemperature();
     String macAddress = wifi.macAddress();
 

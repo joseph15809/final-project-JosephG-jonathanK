@@ -1,5 +1,6 @@
 #include "ECE140_MQTT.h"
 
+
 ECE140_MQTT::ECE140_MQTT(String clientId, String topicPrefix)
 : _clientId(clientId), _topicPrefix(topicPrefix), _isTLS(false) {
     Serial.println("[ECE140_MQTT] Initialized with client ID and topic prefix");
@@ -10,7 +11,7 @@ bool ECE140_MQTT::connectToBroker(int port) {
     _isTLS = false;
     _setupMQTTClient(port);
     
-    Serial.println("[MQTT] Connecting to HiveMQ broker...");
+    Serial.println("[MQTT] Connecting to broker...");
     
     if (_mqttClient->connect(_clientId.c_str())) {
         Serial.println("[MQTT] Connected successfully!");

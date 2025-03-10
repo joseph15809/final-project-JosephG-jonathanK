@@ -10,7 +10,7 @@ import time
 
 load_dotenv()
 url = "http://localhost:8000/api/temperature"
-BROKER = "broker.hivemq.com"
+BROKER = "test.mosquitto.org"
 PORT = 1883
 BASE_TOPIC = os.getenv("BASE_TOPIC")
 TOPIC = BASE_TOPIC + "/#"

@@ -1,22 +1,26 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const pathSegments = window.location.pathname.split("/");
-    const userId = pathSegments[pathSegments.length - 1];  // Extract user_id from URL
+    getUserId();
 
-    loadUserDevices(userId);
-    loadAvailableDevices(userId);
 
-    document.getElementById("add-device").addEventListener("click", function (event) {
-        event.preventDefault();
-        addDeviceToProfile(userId);
-    });
 });
+// Fetch user id
+function getUserId() {
+    fetch(`/api/getId`)
+        .then(response => response.json())
+        .then(data => {
+            userId = data.user_id;
+            loadAvailableDevices(userId);
+            loadUserDevices(userId);
+        })
+    .catch(error => console.error("Error getting User ID"))
+}
 
 // Fetch devices already linked to the user
 function loadUserDevices(userId) {
     fetch(`/api/devices/${userId}`)
         .then(response => response.json())
         .then(data => {
-            const deviceList = document.getElementById("deviceList");
+            const deviceList = document.getElementById("device-list");
             deviceList.innerHTML = ""; // Clear previous entries
 
             if (!data.devices || data.devices.length === 0) {
@@ -34,7 +38,7 @@ function loadUserDevices(userId) {
 }
 
 // Fetch all available devices (devices not yet assigned to any user)
-function loadAvailableDevices() {
+function loadAvailableDevices(userId) {
     fetch(`/api/devices`)  // Endpoint to get unassigned ESP32 devices
         .then(response => response.json())
         .then(data => {
@@ -48,10 +52,17 @@ function loadAvailableDevices() {
 
             data.devices.forEach(device => {
                 const listItem = document.createElement("li");
-                listItem.innerHTML = `
-                    Device ID: ${device.device_id}, MAC: ${device.mac_address}
-                    <button onclick="addDeviceToProfile('${userId}', '${device.device_id}')">Add</button>
-                `;
+                listItem.innerHTML = `Device ID: ${device.device_id}, MAC: ${device.mac_address} `;
+                
+                const addButton = document.createElement("button");  // Create a button element
+                addButton.textContent = "Add Device";  
+                addButton.dataset.deviceId = device.device_id;  // Store device_id in dataset
+                addButton.addEventListener("click", function(event){
+                    event.preventDefault();
+                    addDeviceToProfile(userId, device.device_id)
+                });
+
+                listItem.appendChild(addButton);  // Append button to list item
                 availableDevices.appendChild(listItem);
             });
         })
@@ -59,16 +70,15 @@ function loadAvailableDevices() {
 }
 
 function addDeviceToProfile(userId, deviceId) {
-    fetch(`/api/add_device/${userId}`, {
+    fetch(`/api/add_device`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ device_id: deviceId })
+        headers: {"Content-Type": "application/json" },
+        body: JSON.stringify({"user_id": userId, "device_id": deviceId })
     })
     .then(response => response.json())
     .then(data => {
-        alert(data.message); // Show success message
-        loadUserDevices(userId); // Refresh the registered device list
-        loadAvailableDevices(userId); // Refresh the available devices list
+        loadAvailableDevices(userId);
+        loadUserDevices(userId);
     })
     .catch(error => console.error("Error adding device to profile:", error));
 }
