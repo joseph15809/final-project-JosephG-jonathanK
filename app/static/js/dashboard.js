@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", function(){
         .then(response => response.json())
         .then(data => {
             userId = data.user_id;
+            getWeather(userId)
             fetchDevices(userId).then(devices =>{
                 const chartContainer = document.getElementById("charts-container");
                 chartContainer.innerHTML = "";
@@ -37,6 +38,41 @@ document.addEventListener("DOMContentLoaded", function(){
         })
     .catch(error => console.error("Error getting User ID:", error))
 });
+
+// Function to get weather from api
+function getWeather(userId) {
+    fetch(`/api/location/${userId}`)
+    .then(response => response.json())
+    .then(async data => {
+        // fetch city coordinates from OpenStreetMap
+        let geoResponse = await fetch(`https://nominatim.openstreetmap.org/search?q=${data.location}&format=json`);
+        let geoData = await geoResponse.json
+
+        // cgecks if valid city
+        if(geoData.length == 0){
+            alert("city not found");
+            return;
+        }
+        let lat = geoData[0].lat;
+        let lon = geoData[0].lon;
+
+        // fetch weather API from National Weather Service
+        let weatherResponse = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
+        let weatherData = await weatherResponse.json();
+
+        // get forecast URL
+        const forecastUrl = weatherData.properties.forecast;
+        let forecastResponse = await fetch(forecastUrl);
+        let forecastData = await forecastResponse.json();
+
+        let weather = forecastData.properties.periods[0]; // gets current weather info
+
+        // updates weather results info 
+        document.getElementById("location").textContent = "Location:" + geoData[0].display_name;
+        document.getElementById("condition").textContent = "Weather Condition(s):" + weather.shortForecast;
+        document.getElementById("temperature").textContent = "Temperature:" + weather.temperature + "°F";
+    })
+}
 
 
 // Function to fetch devices for a user

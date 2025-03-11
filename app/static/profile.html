@@ -9,6 +9,31 @@
     <body>
         <h1>User Profile</h1>
 
+        <h2>Account Info</h2>
+        <form id="updateUserForm">
+            <label for="name">Name:</label>
+            <input type="text" id="name" required>
+        
+            <label for="email">Email:</label>
+            <input type="text" id="email" disabled>
+        
+            <label for="location">Location:</label>
+            <input type="text" id="location" required>
+        
+            <h3>Change Password (Optional)</h3>
+            <label for="current_password">Current Password:</label>
+            <input type="password" id="current_password">
+        
+            <label for="new_password">New Password:</label>
+            <input type="password" id="new_password">
+        
+            <label for="confirm_password">Confirm New Password:</label>
+            <input type="password" id="confirm_password">
+        
+            <button id="update-button" type="submit">Update Profile</button>
+        </form>
+        <p id="updateMessage"></p>
+
         <h2>Registered ESP32 Devices</h2>
         <ul id="device-list"></ul>
 

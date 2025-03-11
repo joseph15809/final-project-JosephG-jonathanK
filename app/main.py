@@ -23,7 +23,9 @@ from .database import (
     add_temperature,
     clear_database,
     add_clothes,
-    remove_clothes
+    remove_clothes,
+    get_users_location,
+    update_user
 )
 
 @asynccontextmanager
@@ -56,6 +58,13 @@ class DeviceRegistration(BaseModel):
 class DeviceAssignment(BaseModel):
     user_id: int
     device_id: int   
+
+class UpdateUserInfo(BaseModel):
+    name: str
+    location: str
+    current_password: str = None  # Optional for password update
+    new_password: str = None
+    confirm_password: str = None
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
@@ -165,6 +174,7 @@ async def logout(request: Request):
     response.delete_cookie("session_id")
     return response
 
+
 @app.get("/wardrobe", response_class=HTMLResponse)
 async def user_wardrobe(request: Request):
     """Show user profile if authenticated, error if not"""
@@ -186,6 +196,7 @@ async def user_wardrobe(request: Request):
         return {"error": "User not found"}
 
     return HTMLResponse(content=read_html("app/static/wardrobe.html"))
+
 
 @app.post("/wardrobe/add")
 async def add_to_wardrobe(request: Request):
@@ -214,6 +225,7 @@ async def add_to_wardrobe(request: Request):
 
     return RedirectResponse(url="/wardrobe", status_code=303)
 
+
 @app.post("/wardrobe/remove")
 async def remove_from_wardrobe(request: Request):
 
@@ -238,6 +250,7 @@ async def remove_from_wardrobe(request: Request):
     await remove_clothes(name, user_id)
 
     return RedirectResponse(url="/wardrobe", status_code=303)
+
 
 @app.get("/api/wardrobe")
 async def get_wardrobe(request: Request):
@@ -277,6 +290,7 @@ async def get_wardrobe(request: Request):
         cursor.close()
         connection.close()   
 
+
 @app.get("/dashboard", response_class=HTMLResponse)
 async def user_page(request: Request):
     """Show user dashboard if authenticated, error if not"""
@@ -299,6 +313,63 @@ async def user_page(request: Request):
 
     return HTMLResponse(content=read_html("app/static/dashboard.html"))
     
+
+@app.get("/api/userInfo")
+async def get_user_info(request: Request):
+    session_id = request.cookies.get("session_id")
+    if session_id:
+        session = await get_session(session_id)
+        if session:
+            user = await get_user_by_id(session["user_id"])
+            if user:
+                return {"name": user["name"],
+                        "email": user["email"],
+                        "location": user["location"]}
+    return {"error": "could not get user info"}
+
+
+@app.put("/api/updateUser")
+async def update_user_info(request: Request, user_data: UpdateUserInfo):
+    session_id = request.cookies.get("session_id")
+    if not session_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    session = await get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=401, detail="Session expired")
+
+    user_id = session["user_id"]
+    user = await get_user_by_id(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="user not found")
+
+    # Check if password update is requested
+    if user_data.current_password and user_data.new_password and user_data.confirm_password:
+        # Validate current password
+        if not bcrypt.checkpw(user_data.current_password.encode(), user["password"].encode()):
+            raise HTTPException(status_code=400, detail="Current password is incorrect")
+
+        # Check if new passwords match and update
+        if user_data.new_password != user_data.confirm_password:
+            raise HTTPException(status_code=400, detail="New passwords do not match")
+        hashed_new_password = bcrypt.hashpw(user_data.new_password.encode(), bcrypt.gensalt()).decode()
+        await update_user_info(user_id, user_data.name, user_data.location, hashed_new_password)
+    
+    else:
+        await update_user_info(user_id, user_data.name, user_data.location)
+
+    return {"success": "User info updated successfully"}
+
+
+@app.get("api/location/{user_id}")
+async def get_user_location(request: Request):
+    try:
+        location = await get_users_location(user_id)
+    except Exception as e:
+        return {"error": f"getting loction failed {e}"}
+    return {"location": location}
+
+
 @app.post("/api/register_device/")
 def register_device(device: DeviceRegistration):
     """Registers an ESP32 device using its MAC address."""
@@ -455,6 +526,7 @@ def add_device_to_user(assignment: DeviceAssignment):
         cursor.close()
         connection.close()
 
+
 @app.get("/api/getId")
 async def get_user_id(request: Request):
     session_id = request.cookies.get("session_id")
@@ -468,6 +540,7 @@ async def get_user_id(request: Request):
             return {"user_id":user_id}    
     return{"error":"Could not get user id"}
 
+
 @app.get("/profile", response_class=HTMLResponse)
 async def signup_html(request: Request):
     session_id = request.cookies.get("session_id")
@@ -480,6 +553,7 @@ async def signup_html(request: Request):
                 return {"error": f"Not authenticated as {user['name']}"}
             return HTMLResponse(content=read_html("app/static/profile.html"))
     return RedirectResponse(url="/login", status_code=302)
+
 
 if __name__ == "__main__":
     uvicorn.run(app="app.main:app", host="0.0.0.0", port=8000, reload=True)

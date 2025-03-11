@@ -17,13 +17,22 @@
         <h1>Welcome!</h1>
 
     </div>
+
+    <div id="weather-container">
+      <span class="info">
+        <p id="location"></p>
+        <p id="condition"></p>
+        <p id="temperature"></p>
+
+        <img id="weatherImage" src="" style="display:none;" width="220">
+        <img id="cityImage" src="" style="display:none;" width="220">
+      </span>
+    </div>
+
     <h2>ESP32 Temperature Data</h2>
     <div id="charts-container"></div>
 
-
-    <button id="wardrobe">wardrobe</button>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script defer src="/static/js/dashboard.js"></script>
-
   </body>
 </html>

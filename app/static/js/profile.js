@@ -1,8 +1,13 @@
 document.addEventListener("DOMContentLoaded", function () {
-    getUserId();
-
+    getUserId();    
+    loadUserInfo();
+    document.getElementById("update-button").addEventListener("submit", function (event) {
+        event.preventDefault();
+        updateUserInfo();
+    });
 
 });
+
 // Fetch user id
 function getUserId() {
     fetch(`/api/getId`)
@@ -14,6 +19,60 @@ function getUserId() {
         })
     .catch(error => console.error("Error getting User ID"))
 }
+
+// Fetch user info
+function loadUserInfo() {
+    fetch(`/api/userInfo`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                console.error("Error fetching user info:", data.error);
+                return;
+            }
+
+            document.getElementById("name").value = data.name;
+            document.getElementById("email").value = data.email;  // Email stays uneditable
+            document.getElementById("location").value = data.location;
+        })
+        .catch(error => console.error("Error loading user info:", error));
+}
+
+// Update user info
+function updateUserInfo() {
+    const name = document.getElementById("name").value;
+    const location = document.getElementById("location").value;
+    const currentPassword = document.getElementById("current_password").value;
+    const newPassword = document.getElementById("new_password").value;
+    const confirmPassword = document.getElementById("confirm_password").value;
+
+    const requestData = { name, location };
+
+    // Only include password fields if user wants to update their password
+    if (currentPassword && newPassword && confirmPassword) {
+        requestData.current_password = currentPassword;
+        requestData.new_password = newPassword;
+        requestData.confirm_password = confirmPassword;
+    }
+
+    fetch(`/api/updateUser`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        const message = document.getElementById("updateMessage");
+        if (data.success) {
+            message.textContent = "User info updated successfully!";
+            message.style.color = "green";
+        } else {
+            message.textContent = "Error: " + data.detail;
+            message.style.color = "red";
+        }
+    })
+    .catch(error => console.error("Error updating user info:", error));
+}
+
 
 // Fetch devices already linked to the user
 function loadUserDevices(userId) {

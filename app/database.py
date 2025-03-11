@@ -103,6 +103,7 @@ async def setup_database():
         "wardrobe": """
             CREATE TABLE IF NOT EXISTS wardrobe (
                 id INT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(100) NOT NULL,
                 user_id INT NOT NULL,
                 type VARCHAR(100) NOT NULL,
                 color VARCHAR(100) NOT NULL,
@@ -148,6 +149,7 @@ async def setup_database():
             connection.close()
             logger.info("Database connection closed")
 
+
 async def add_user(name: str, email: str, password: str, location: str) -> int:
     """Insert a new user into the database and return the user ID."""
     connection = None
@@ -179,6 +181,7 @@ async def add_user(name: str, email: str, password: str, location: str) -> int:
         if connection and connection.is_connected():
             connection.close()       
 
+
 async def add_clothes(name: str, user_id: int, type: str, color: str):
     connection = None
     cursor = None
@@ -202,7 +205,8 @@ async def add_clothes(name: str, user_id: int, type: str, color: str):
             cursor.close()
         if connection and connection.is_connected():
             connection.close()
-            
+
+
 async def remove_clothes(name: str, user_id: int):
     connection = None
     cursor = None
@@ -226,6 +230,7 @@ async def remove_clothes(name: str, user_id: int):
             cursor.close()
         if connection and connection.is_connected():
             connection.close()              
+
 
 async def get_user_by_email(email: str) -> Optional[dict]:
     """Retrieve user from database by email."""
@@ -326,7 +331,6 @@ async def delete_session(session_id: str) -> bool:
             connection.close()
 
 
-
 async def add_temperature(mac_address: str, value: float, unit: str, timestamp: str) -> int:
     """Insert a new user into the database and return the user ID."""
     connection = None
@@ -359,6 +363,53 @@ async def add_temperature(mac_address: str, value: float, unit: str, timestamp: 
             connection.close()   
 
 
+async def update_user(user_id, name, location, new_hashed_password=None):
+    """Updates users info"""
+    connection = None
+    cursor = None
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor()
+        if new_hashed_password:
+            query = "UPDATE users SET name = %s, location = %s, password = %s WHERE user_id = %s"
+            cursor.execute(query, (name, location, new_hashed_password, user_id))
+        else:
+            query = "UPDATE users SET name = %s, location = %s WHERE user_id = %s"
+            cursor.execute(query, (name, location, user_id))
+            connection.commit()
+            cursor.close()
+            connection.close()
+    except Exception as e:
+        if connection:
+            connection.rollback()
+        raise Exception(f"Failed to get user location: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+async def get_users_location(user_id):
+    connection = None
+    cursor = None
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT location FROM users WHERE user_id = %s", (user_id,))
+        return cursor.fetchone()
+    
+    except Exception as e:
+        if connection:
+            connection.rollback()
+        raise Exception(f"Failed to get user location: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
 
 def clear_database():
     """Deletes all data from all tables."""
@@ -383,6 +434,7 @@ def clear_database():
         cursor.close()
         connection.close()
 
+
 def delete_all_tables():
     """Deletes all tables from the database."""
     connection = get_db_connection()
@@ -398,8 +450,10 @@ def delete_all_tables():
 
         for table in tables:
             table_name = table[0]
-            print(f"Dropping table: {table_name}")
-            cursor.execute(f"DROP TABLE IF EXISTS {table_name};")
+
+        
+        print(f"Dropping table: wardrobe")
+        cursor.execute(f"DROP TABLE IF EXISTS wardrobe;")
 
         # Re-enable foreign key checks
         cursor.execute("SET FOREIGN_KEY_CHECKS = 1;")
