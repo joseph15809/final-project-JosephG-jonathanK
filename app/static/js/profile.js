@@ -1,11 +1,10 @@
 document.addEventListener("DOMContentLoaded", function () {
-    getUserId();    
     loadUserInfo();
-    document.getElementById("update-button").addEventListener("submit", function (event) {
+    document.getElementById("update-user-form").addEventListener("submit", function (event) {
         event.preventDefault();
         updateUserInfo();
     });
-
+    getUserId();
 });
 
 // Fetch user id
@@ -17,11 +16,12 @@ function getUserId() {
             loadAvailableDevices(userId);
             loadUserDevices(userId);
         })
-    .catch(error => console.error("Error getting User ID"))
+    .catch(error => console.error("Error getting User ID:", error))
 }
 
 // Fetch user info
 function loadUserInfo() {
+
     fetch(`/api/userInfo`)
         .then(response => response.json())
         .then(data => {

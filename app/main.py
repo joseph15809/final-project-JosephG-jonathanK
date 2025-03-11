@@ -353,16 +353,16 @@ async def update_user_info(request: Request, user_data: UpdateUserInfo):
         if user_data.new_password != user_data.confirm_password:
             raise HTTPException(status_code=400, detail="New passwords do not match")
         hashed_new_password = bcrypt.hashpw(user_data.new_password.encode(), bcrypt.gensalt()).decode()
-        await update_user_info(user_id, user_data.name, user_data.location, hashed_new_password)
+        await update_user(user_id, user_data.name, user_data.location, hashed_new_password)
     
     else:
-        await update_user_info(user_id, user_data.name, user_data.location)
+        await update_user(user_id, user_data.name, user_data.location)
 
     return {"success": "User info updated successfully"}
 
 
-@app.get("api/location/{user_id}")
-async def get_user_location(request: Request):
+@app.get("/api/location/{user_id}")
+async def get_user_location(user_id: int, request: Request):
     try:
         location = await get_users_location(user_id)
     except Exception as e:

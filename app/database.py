@@ -376,9 +376,7 @@ async def update_user(user_id, name, location, new_hashed_password=None):
         else:
             query = "UPDATE users SET name = %s, location = %s WHERE user_id = %s"
             cursor.execute(query, (name, location, user_id))
-            connection.commit()
-            cursor.close()
-            connection.close()
+        connection.commit()
     except Exception as e:
         if connection:
             connection.rollback()

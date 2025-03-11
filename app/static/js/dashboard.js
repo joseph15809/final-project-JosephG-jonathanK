@@ -46,7 +46,7 @@ function getWeather(userId) {
     .then(async data => {
         // fetch city coordinates from OpenStreetMap
         let geoResponse = await fetch(`https://nominatim.openstreetmap.org/search?q=${data.location}&format=json`);
-        let geoData = await geoResponse.json
+        let geoData = await geoResponse.json()
 
         // cgecks if valid city
         if(geoData.length == 0){
@@ -69,7 +69,7 @@ function getWeather(userId) {
 
         // updates weather results info 
         document.getElementById("location").textContent = "Location:" + geoData[0].display_name;
-        document.getElementById("condition").textContent = "Weather Condition(s):" + weather.shortForecast;
+        document.getElementById("condition").textContent = "Weather Condition(s):" + weather.detailedForecast;
         document.getElementById("temperature").textContent = "Temperature:" + weather.temperature + "°F";
     })
 }
