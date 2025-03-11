@@ -1,10 +1,10 @@
-<<<<<<< HEAD
 canvas {
     width: 800px !important;
     height: 400px !important;
     max-width: 100%;
     display: block;
-=======
+}
+
 #wardrobe-button, #profile-button, #logout-button {
     background: linear-gradient(135deg, #6e8efb, #a777e3); /* Gradient background */
     border: none;
@@ -21,5 +21,4 @@ canvas {
 .buttons {
   float: right;
   margin-right: 5px;
->>>>>>> wardrobe
 }
