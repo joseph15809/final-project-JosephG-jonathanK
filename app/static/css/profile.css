@@ -81,24 +81,33 @@ body {
 
 /* Form Styling */
 #update-user-form {
-    display: grid;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     gap: 15px;
-    text-align: left;
 }
 
 /* Label Styling */
 label {
+    width: 100%;
+    max-width: 400px;
+    text-align: left;
     font-weight: bold;
     color: #444;
+    display: block;
+    margin: 0 auto;
 }
 
 /* Input Fields */
 input {
-    width: 100%;
+    width: 60%;
+    max-width: 400px;
     padding: 10px;
     border-radius: 8px;
     border: 1px solid #ccc;
     transition: all 0.3s ease;
+    display: block;
+    margin: 0 auto; 
 }
 
 input:focus {
