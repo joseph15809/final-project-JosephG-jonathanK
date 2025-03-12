@@ -41,7 +41,7 @@ function loadUserInfo() {
             }
 
             document.getElementById("name").value = data.name;
-            document.getElementById("email").value = data.email;  // Email stays uneditable
+            document.getElementById("email").value = data.email;
             document.getElementById("location").value = data.location;
         })
         .catch(error => console.error("Error loading user info:", error));

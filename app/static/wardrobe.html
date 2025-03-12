@@ -6,7 +6,7 @@
 </head>
 <body>
 
-    <!-- Wardrobe Header -->
+    <!-- Wardrobe header -->
     <header class="wardrobe-header">
         <h1 class="team-name">AI Wardrobe</h1>
         <div class="buttons-container">
@@ -15,62 +15,57 @@
         </div>
     </header>
 
-    <!-- Main Wardrobe Layout -->
+    <!-- Main wardrobe layout -->
     <div class="wardrobe-container">
-        <!-- Add & Remove Clothes in Two Columns -->
-        <div class="wardrobe-top">
-            <!-- Add Clothes Section -->
-            <div class="wardrobe-card add-clothes">
+            <!-- Add clothes section -->
+            <div class="add-clothes">
                 <h2>Add Clothes</h2>
                 <form class="add-form" action="/wardrobe/add" method="POST">
-                    <label for="type">Clothing Type:</label>
-                    <select id="type" name="type" required>
-                        <option value="Shirt">Shirt</option>
-                        <option value="Sweater">Sweater</option>
-                        <option value="Shorts">Shorts</option>
-                        <option value="Pants">Pants</option>
-                    </select>
-
-                    <label for="color">Color:</label>
-                    <select id="color" name="color" required>
-                        <option value="Black">Black</option>
-                        <option value="Gray">Gray</option>
-                        <option value="Brown">Brown</option>
-                        <option value="Red">Red</option>
-                        <option value="Orange">Orange</option>
-                        <option value="Yellow">Yellow</option>
-                        <option value="Green">Green</option>
-                        <option value="Blue">Blue</option>
-                        <option value="Purple">Purple</option>
-                        <option value="Pink">Pink</option>
-                        <option value="White">White</option>
-                    </select>
-
-                    <label for="name">Clothing Name:</label>
-                    <input type="text" id="name" name="name" placeholder="Optional">
-
+                    <!-- Type selection -->
+                    <div class="input-group">
+                        <label for="type">Clothes Type</label>
+                        <select id="type" name="type" required>
+                            <option value="Shirt">Shirt</option>
+                            <option value="Sweater">Sweater</option>
+                            <option value="Shorts">Shorts</option>
+                            <option value="Pants">Pants</option>
+                        </select>
+                    </div>
+                
+                    <!-- Color selection -->
+                    <div class="input-group">
+                        <label for="color">Color</label>
+                        <select id="color" name="color" required>
+                            <option value="Black">Black</option>
+                            <option value="Gray">Gray</option>
+                            <option value="Brown">Brown</option>
+                            <option value="Red">Red</option>
+                            <option value="Orange">Orange</option>
+                            <option value="Yellow">Yellow</option>
+                            <option value="Green">Green</option>
+                            <option value="Blue">Blue</option>
+                            <option value="Purple">Purple</option>
+                            <option value="Pink">Pink</option>
+                            <option value="White">White</option>
+                        </select>
+                    </div>
+                
+                    <!-- Name input-->
+                    <div class="input-group">
+                        <label for="name">Name</label>
+                        <input type="text" id="name" name="name" placeholder="Optional">
+                    </div>
+                
+                    <!-- Submit -->
                     <button id="add-button" type="submit">Add Clothes</button>
                 </form>
             </div>
-
-            <!-- Remove Clothes Section -->
-            <div class="wardrobe-card remove-clothes">
-                <h2>Remove Clothes</h2>
-                <form class="remove-form" action="/wardrobe/remove" method="POST">
-                    <label for="remove-list">Select Item to Remove:</label>
-                    <select id="remove-list" name="remove-list">
-                        <option value="">Loading items...</option>
-                    </select>
-                    <button id="remove-button" type="submit">Remove Clothes</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- My Clothes Section -->
-        <div class="wardrobe-card clothes-section">
+            
+        <!-- My clothes -->
+        <div class="clothes-section">
             <h2>My Clothes</h2>
             <div class="clothes-list" id="clothes-list">
-                <p>No Clothes</p> <!-- This will be replaced dynamically -->
+                <p>No Clothes</p>
             </div>
         </div>
     </div>

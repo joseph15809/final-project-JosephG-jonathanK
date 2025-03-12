@@ -232,7 +232,7 @@ async def add_to_wardrobe(request: Request):
         raise HTTPException(status_code=401, detail="Not authenticated")
     
     user_id = session["user_id"]
-    if name is None:
+    if not name:
         name = color + ' ' + type
 
     if not user_id:

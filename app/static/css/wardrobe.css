@@ -34,7 +34,7 @@ body {
 }
 
 /* Buttons */
-#dashboard-button, #profile-button, #add-button, #remove-button {
+#dashboard-button, #profile-button, #add-button {
     background: linear-gradient(135deg, #6e8efb, #a777e3);
     border: none;
     color: white;
@@ -47,15 +47,14 @@ body {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
-#dashboard-button:hover, #profile-button:hover, #add-button:hover, #remove-button:hover {
+#dashboard-button:hover, #profile-button:hover, #add-button:hover {
     background: linear-gradient(135deg, #e67600, #d22661);
     transform: translateY(-2px);
 }
 
-/* Main Wardrobe Container - 90% Page Width */
+/* Main wardrobe container */
 .wardrobe-container {
-    width: 90%;
-    max-width: 1200px;
+    width: 85%;
     margin: 50px auto;
     padding: 20px;
     display: flex;
@@ -63,25 +62,68 @@ body {
     gap: 20px;
 }
 
-/* Two-Column Layout for Add & Remove Clothes */
-.wardrobe-top {
-    display: flex;
-    justify-content: space-between;
-    gap: 20px;
-}
-
-/* Styling for Each Card */
-.wardrobe-card {
+/* Styling add clothes */
+.add-clothes {
     background: white;
     padding: 20px;
     border-radius: 12px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     text-align: center;
-    flex: 1;
-    width: 100%;  /* Ensures full width within parent */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 50%;
+    max-width: 500px;
+    margin: 0 auto;
 }
 
-/* Clothes List - Horizontal Layout */
+.add-clothes form {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.add-clothes .input-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.add-clothes select, .add-clothes input {
+    width: 140px;
+    padding: 10px;
+    font-size: 16px;
+    border: 2px solid #6e8efb;
+    border-radius: 8px;
+    outline: none;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+/* Input focus */
+.add-clothes select:focus, .add-clothes input:focus {
+    border-color: #a777e3;
+    box-shadow: 0 0 8px rgba(167, 119, 227, 0.4);
+}
+
+.clothes-section {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    align-items: center;
+    text-align: center;
+    flex: 1;
+    width: 100%; 
+}
+
+/* Clothes list */
 .clothes-list {
     display: flex;
     flex-wrap: wrap;
@@ -90,7 +132,7 @@ body {
     padding: 10px;
 }
 
-/* Individual Clothing Card */
+/* Individual clothing card */
 .clothes-card {
     background: white;
     padding: 15px;
@@ -104,7 +146,7 @@ body {
     position: relative;
 }
 
-/* Editable Inputs */
+/* Editable inputs */
 .clothes-card input {
     border: none;
     font-size: 16px;
@@ -149,13 +191,6 @@ body {
     bottom: 15px;
 }
 
-/* Responsive Design */
-@media (max-width: 1024px) {
-    .wardrobe-top {
-        flex-direction: column; /*Stacks sections on medium screens */
-    }
-}
-
 @media (max-width: 768px) {
     .wardrobe-header {
         flex-direction: column;
@@ -166,7 +201,14 @@ body {
         margin-top: 10px;
     }
 
-    .wardrobe-card {
+    .add-clothes form {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .add-clothes select, 
+    .add-clothes input {
         width: 100%;
+        max-width: 300px;
     }
 }

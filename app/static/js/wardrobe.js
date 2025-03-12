@@ -15,9 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
     })
     .then(response => response.json())
     .then(data => {
-        let removeList = document.getElementById("remove-list");
         let clothesList = document.getElementById("clothes-list");
-        removeList.innerHTML = "";
         clothesList.innerHTML = "";
 
         data.forEach(item => {
