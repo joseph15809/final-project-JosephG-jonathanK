@@ -1,38 +1,51 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Dashboard</title>
-    <link rel="stylesheet" href="/static/css/dashboard.css">
-  </head>
-  <body>
-    <span class = buttons>
+<head>
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body>
+  <!-- Dashboard Header -->
+  <header class="dashboard-header">
+    <h1 class="team-name">AI Wardrobe</h1>
+    <div class="buttons-container">
       <button id="wardrobe-button">Wardrobe</button>
       <button id="profile-button">Profile</button>
       <form class="logout-form" action="/logout" method="POST">
         <button id="logout-button" type="submit">Logout</button>
       </form>
-    </span>
-
+    </div>
+  </header>
+  <!-- Dashboard Sections -->
+  <div class="dashboard-container">
     <div class="logo">
-        <h1>Welcome!</h1>
-
+      <h1>Welcome!</h1>
+    </div>
+    <!-- Weather section -->
+    <div id="weather-container" class="card">
+      <h3>Current Weather</h3>
+      <p id="location"></p>
+      <p id="condition"></p>
+      <p id="temperature"></p>
+      <p id="wind-speed"></p>
+      <img id="weatherImage" src="" style="display:none;" width="100">
+      <img id="cityImage" src="" style="display:none;" width="100">
     </div>
 
-    <div id="weather-container">
-      <span class="info">
-        <p id="location"></p>
-        <p id="condition"></p>
-        <p id="temperature"></p>
-
-        <img id="weatherImage" src="" style="display:none;" width="220">
-        <img id="cityImage" src="" style="display:none;" width="220">
-      </span>
+    <!-- AI outfit section-->
+    <div id="outfit-container" class="card">
+      <h3>What Should I Wear Today?</h3>
+      <p id="thinking-text" style="display: none;">Thinking...</p>
+      <p id="outfit-text"></p>
+      <button id="outfit-button">Get Outfit</button>
     </div>
 
+    <!-- ESP32 Data Graph-->
     <h2>ESP32 Temperature Data</h2>
     <div id="charts-container"></div>
+  </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script defer src="/static/js/dashboard.js"></script>
-  </body>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script defer src="/static/js/dashboard.js"></script>
+</body>
 </html>

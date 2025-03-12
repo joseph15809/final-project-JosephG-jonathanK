@@ -1,7 +1,11 @@
 const sensor  = "temperature";
+var temperature;
+var condition;
+
 document.addEventListener("DOMContentLoaded", function(){
     const wardrobeBtn = document.getElementById("wardrobe-button");
     const profileBtn = document.getElementById("profile-button");
+    const outfitBtn = document.getElementById("outfit-button");
 
     wardrobeBtn.addEventListener("click", () => {
         window.location.href = "/wardrobe";
@@ -9,6 +13,10 @@ document.addEventListener("DOMContentLoaded", function(){
 
     profileBtn.addEventListener("click", () => {
         window.location.href = "/profile";
+    });
+
+    outfitBtn.addEventListener("click",() =>{
+        generateOutfit()
     });
 
     fetch(`/api/getId`)
@@ -66,14 +74,61 @@ function getWeather(userId) {
         let forecastData = await forecastResponse.json();
 
         let weather = forecastData.properties.periods[0]; // gets current weather info
-
+        temperature = weather.temperature
+        condition = weather.shortForecast
         // updates weather results info 
-        document.getElementById("location").textContent = "Location:" + geoData[0].display_name;
-        document.getElementById("condition").textContent = "Weather Condition(s):" + weather.detailedForecast;
-        document.getElementById("temperature").textContent = "Temperature:" + weather.temperature + "°F";
+        document.getElementById("location").textContent = "Location:" + geoData[0].name;
+        document.getElementById("condition").textContent = "Weather Condition(s):" + condition;
+        document.getElementById("wind-speed").textContent = "Wind Speed:" + weather.windSpeed;  
+        document.getElementById("temperature").textContent = "Temperature:" + temperature + "°F";
     })
 }
 
+// Function to generate outfit for user
+function generateOutfit() {
+    const outfitTextElement = document.getElementById("outfit-text");
+    const thinkingText = document.getElementById("thinking-text");
+
+    // Show "Thinking..." text and clear previous outfit
+    thinkingText.style.display = "block";
+    outfitTextElement.textContent = "";
+    fetch(`/api/generate-outfit/${temperature}/${condition}`)
+        .then(response => response.json())
+        .then(data => {
+            thinkingText.style.display = "none";
+            const outfitText = data.outfit;
+            typeText("outfit-text", outfitText);
+        })
+        .catch(error => {
+            thinkingText.style.display = "none"; // Hide thinking if error occurs
+            outfitTextElement.textContent = "Failed to load outfit. Try again.";
+            console.error("Error fetching outfit:", error);
+        });
+}
+
+// Function for typing effect
+function typeText(elementId, text, speed = 50) {
+    let i = 0;
+    const element = document.getElementById(elementId);
+    element.innerHTML = ""; // Clear previous text
+
+    // Convert **bold** and *italic* to proper HTML
+    text = text
+        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")  // Convert **bold** to <strong>
+        .replace(/\*(.*?)\*/g, "<em>$1</em>");            // Convert *italic* to <em>
+
+    let tempHTML = ""; // Temporary string to store formatted text
+
+    function type() {
+        if (i < text.length) {
+            tempHTML += text.charAt(i); // Add next character
+            element.innerHTML = tempHTML; // Update innerHTML each step
+            i++;
+            setTimeout(type, speed);
+        }
+    }
+    type();
+}
 
 // Function to fetch devices for a user
 function fetchDevices(userId) {

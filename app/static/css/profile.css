@@ -1,0 +1,138 @@
+/* Page Styling */
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #a8d9ff, #c3cfe2);
+    color: #333;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+/* Profile Header */
+.profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    padding: 20px 30px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.team-name {
+    font-size: 28px;
+    font-weight: bold;
+    color: #4A47A3;
+    margin: 0;
+}
+
+/* Buttons Container */
+.buttons-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Buttons */
+#wardrobe-button, #dashboard-button, #logout-button, #update-button, #add-button {
+    background: linear-gradient(135deg, #6e8efb, #a777e3);
+    border: none;
+    color: white;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+#wardrobe-button:hover, #dashboard-button:hover, #logout-button:hover, #update-button:hover, #add-button:hover {
+    background: linear-gradient(135deg, #e67600, #d22661);
+    transform: translateY(-2px);
+}
+
+/* Click effect */
+#wardrobe-button:active, #dashboard-button:active, #logout-button:active, #update-button:active, #add-button:active {
+    transform: translateY(2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Profile Container */
+.profile-container {
+    max-width: 900px;
+    margin: 50px auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Profile Sections as Cards */
+.profile-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 80%;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Form Styling */
+#update-user-form {
+    display: grid;
+    gap: 15px;
+    text-align: left;
+}
+
+/* Label Styling */
+label {
+    font-weight: bold;
+    color: #444;
+}
+
+/* Input Fields */
+input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    transition: all 0.3s ease;
+}
+
+input:focus {
+    border-color: #6e8efb;
+    box-shadow: 0 0 8px rgba(110, 142, 251, 0.3);
+}
+
+/* ESP32 Device List */
+#device-list, #available-devices {
+    list-style-type: none;
+    padding: 0;
+}
+
+#device-list li, #available-devices li {
+    background: #fefafa;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-size: 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .buttons-container {
+        margin-top: 10px;
+    }
+
+    .profile-card {
+        width: 90%;
+    }
+}

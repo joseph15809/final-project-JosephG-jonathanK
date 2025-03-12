@@ -232,6 +232,31 @@ async def remove_clothes(name: str, user_id: int):
             connection.close()              
 
 
+async def get_user_clothes(user_id: int):
+    connection = None
+    cursor = None
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM wardrobe WHERE user_id = %s", (user_id,))
+        data = cursor.fetchall()
+        wardrobe_data = []
+        for item in data:
+            wardrobe_data.append({
+                "name": item[1],
+                "type": item[3],
+                "color": item[4]
+            })
+
+        return wardrobe_data
+    except Exception as e:
+        connection.rollback()
+        raise Exception(f"Failed to get clothes: {e}")
+    finally:
+        cursor.close()
+        connection.close()   
+
+
 async def get_user_by_email(email: str) -> Optional[dict]:
     """Retrieve user from database by email."""
     connection = None

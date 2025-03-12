@@ -1,24 +1,113 @@
-canvas {
-    width: 800px !important;
-    height: 400px !important;
-    max-width: 100%;
-    display: block;
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #a8d9ff, #c3cfe2);
+  color: #333;
+  text-align: center;
+  margin: 0;
+  padding: 0;
 }
 
-#wardrobe-button, #profile-button, #logout-button {
-    background: linear-gradient(135deg, #6e8efb, #a777e3); /* Gradient background */
-    border: none;
-    color: white;
-    padding: 12px 24px;
-    font-size: 16px;
-    font-weight: bold;
-    border-radius: 25px; /* Rounded corners */
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+/* Header Styling */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 20px 30px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* AI Wardrobe Title */
+.team-name {
+  font-size: 28px;
+  font-weight: bold;
+  color: #4A47A3;
+  margin: 0;
+}
+
+/* Buttons Container */
+.buttons-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* Button Styling */
+#wardrobe-button, #profile-button, #logout-button, #outfit-button {
+  background: linear-gradient(135deg, #6e8efb, #a777e3);
+  border: none;
+  color: white;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+#wardrobe-button:hover, #profile-button:hover, #logout-button:hover, #outfit-button:hover {
+  background: linear-gradient(135deg, #e67600, #d22661);
+  transform: translateY(-2px);
+}
+
+/* Click effect */
+#wardrobe-button:active, #profile-button:active, #logout-button:active, #outfit-button:active {
+  transform: translateY(2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Dashboard Container */
+.dashboard-container {
+  max-width: 900px;
+  margin: 50px auto;
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .dashboard-header {
+      flex-direction: column;
+      text-align: center;
   }
 
-.buttons {
-  float: right;
-  margin-right: 5px;
+  .buttons-container {
+      margin-top: 10px;
+  }
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  margin: 20px auto;
+  width: 80%;
+  max-width: 600px;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  text-align: center;
+}
+
+/* Weather Section */
+#weather-container h3, #outfit-container h3 {
+  color: #4A47A3;
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+/* Thinking Text */
+#thinking-text {
+  font-size: 18px;
+  font-weight: bold;
+  color: #777;
+  animation: fadeInOut 1.5s infinite;
+}
+
+/* "Thinking" Animation */
+@keyframes fadeInOut {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
 }

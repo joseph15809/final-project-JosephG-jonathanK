@@ -1,8 +1,10 @@
-from fastapi import FastAPI, Request, Response, HTTPException, Query
+from fastapi import FastAPI, Request, Response, HTTPException, Query, Depends
 from fastapi.responses import Response, HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+import httpx
 import uvicorn
 import os
+from dotenv import load_dotenv
 import bcrypt
 import uuid
 import mysql.connector
@@ -24,9 +26,14 @@ from .database import (
     clear_database,
     add_clothes,
     remove_clothes,
+    get_user_clothes,
     get_users_location,
     update_user
 )
+
+load_dotenv()
+PID = os.getenv("UCSD_PID")
+email = os.getenv("UCSD_EMAIL")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -269,26 +276,52 @@ async def get_wardrobe(request: Request):
     
     user_id = session["user_id"]
     
-    try:
-        cursor.execute("SELECT * FROM wardrobe WHERE user_id = %s", (user_id,))
-        data = cursor.fetchall()
-        wardrobe_data = []
-        for item in data:
-            wardrobe_data.append({
-                "id": item[0],
-                "name": item[1],
-                "user_id": item[2],
-                "type": item[3],
-                "color": item[4]
-            })
+    wardrobe_data = await get_user_clothes(user_id)
 
-        return JSONResponse(wardrobe_data, status_code=200)
-    except Exception as e:
-        connection.rollback()
-        raise HTTPException(status_code=500, detail=f"Database error: {e}")
-    finally:
-        cursor.close()
-        connection.close()   
+    return JSONResponse(wardrobe_data, status_code=200)
+
+
+async def generate_outfit_request(prompt: str):
+    """Send an async request to AI API to generate outfit"""
+    AI_API_URL = "https://ece140-wi25-api.frosty-sky-f43d.workers.dev/api/v1/ai/complete"
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        try:
+            ai_response = await client.post(
+                AI_API_URL,
+                headers={
+                    "email": email,
+                    "pid": PID,
+                    "Content-Type": "application/json"
+                },
+                json={"prompt": prompt}
+            )
+        except httpx.TimeoutException:
+            return {"error": "AI API request timed out"} 
+    response_data = ai_response.json()
+
+    if ai_response.status_code != 200 or not response_data.get("success", False):
+        return {"error": f"Failed to generate outfit. Status code: {ai_response.status_code}"}
+
+    generated_outfit = response_data.get("result", {}).get("response", "No outfit recommendation found.")
+    
+    return {"outfit": generated_outfit}
+
+
+@app.get("/api/generate-outfit/{temperature}/{condition}")
+async def generate_user_outfit(temperature: int, condition: str, request: Request):
+    session_id = request.cookies.get("session_id")
+    if session_id:
+        session = await get_session(session_id)
+        if session:
+            user_id = session["user_id"]
+            user = await get_user_by_id(user_id)
+            if user:
+                clothes = await get_user_clothes(user_id)
+                weather_text = f"{temperature}°F, {condition}"
+                prompt = f"From these pieces of clothing: {clothes} and based on the weather ({weather_text}), generate an outfit me to wear."
+                outfit_result = await generate_outfit_request(prompt)
+                return JSONResponse(outfit_result, status_code=200)
+    return JSONResponse({"error": "Failed to authenticate user"}, status_code=401) 
 
 
 @app.get("/dashboard", response_class=HTMLResponse)

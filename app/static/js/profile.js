@@ -1,4 +1,14 @@
 document.addEventListener("DOMContentLoaded", function () {
+    const wardrobeBtn = document.getElementById("wardrobe-button");
+    const dashboardBtn = document.getElementById("dashboard-button");
+    wardrobeBtn.addEventListener("click", () => {
+        window.location.href = "/wardrobe";
+    });
+
+    dashboardBtn.addEventListener("click", () => {
+        window.location.href = "/dashboard";
+    });
+
     loadUserInfo();
     document.getElementById("update-user-form").addEventListener("submit", function (event) {
         event.preventDefault();
@@ -114,7 +124,8 @@ function loadAvailableDevices(userId) {
                 listItem.innerHTML = `Device ID: ${device.device_id}, MAC: ${device.mac_address} `;
                 
                 const addButton = document.createElement("button");  // Create a button element
-                addButton.textContent = "Add Device";  
+                addButton.textContent = "Add Device"; 
+                addButton.id = "add-button";
                 addButton.dataset.deviceId = device.device_id;  // Store device_id in dataset
                 addButton.addEventListener("click", function(event){
                     event.preventDefault();

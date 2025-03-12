@@ -1,50 +1,70 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>User Profile</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/profile.css">
+    <title>User Profile</title>
+</head>
+<body>
+    <!-- Profile Header -->
+    <header class="profile-header">
+        <h1 class="team-name">AI Wardrobe</h1>
+        <div class="buttons-container">
+            <button id="wardrobe-button">Wardrobe</button>
+            <button id="dashboard-button">Dashboard</button>
+            <form class="logout-form" action="/logout" method="POST">
+                <button id="logout-button" type="submit">Logout</button>
+            </form>
+        </div>
+    </header>
 
-    </head>
-    <body>
-        <h1>User Profile</h1>
+    <!-- Profile Sections -->
+    <div class="profile-container">
+        <!-- Account Info Section -->
+        <div class="profile-card">
+            <h2>Account Info</h2>
+            <form id="update-user-form">
+                <label for="name">Name:</label>
+                <input type="text" id="name" required>
 
-        <h2>Account Info</h2>
-        <form id="update-user-form">
-            <label for="name">Name:</label>
-            <input type="text" id="name" required>
-        
-            <label for="email">Email:</label>
-            <input type="text" id="email" disabled>
-        
-            <label for="location">Location:</label>
-            <input type="text" id="location" required>
-        
-            <h3>Change Password (Optional)</h3>
-            <label for="current_password">Current Password:</label>
-            <input type="password" id="current_password">
-        
-            <label for="new_password">New Password:</label>
-            <input type="password" id="new_password">
-        
-            <label for="confirm_password">Confirm New Password:</label>
-            <input type="password" id="confirm_password">
-        
-            <button id="update-button" type="submit">Update Profile</button>
-        </form>
-        <p id="updateMessage"></p>
+                <label for="email">Email:</label>
+                <input type="text" id="email" disabled>
 
-        <h2>Registered ESP32 Devices</h2>
-        <ul id="device-list"></ul>
+                <label for="location">Location:</label>
+                <input type="text" id="location" required>
 
-        <h2>Add a New ESP32 Device</h2>
-        <form id="addDeviceForm">
-            <h3>Available Devices</h3>
-            <ul id="available-devices"></ul>
-        </form>
+                <h3>Change Password (Optional)</h3>
+                <label for="current_password">Current Password:</label>
+                <input type="password" id="current_password">
 
-        <br>
-        <a href="/dashboard">Back to Dashboard</a>
-        <script defer src="/static/js/profile.js"></script>
-    </body>
+                <label for="new_password">New Password:</label>
+                <input type="password" id="new_password">
+
+                <label for="confirm_password">Confirm New Password:</label>
+                <input type="password" id="confirm_password">
+                <br><br>
+                <button id="update-button" type="submit">Update Profile</button>
+            </form>
+            <p id="updateMessage"></p>
+        </div>
+
+        <!-- Registered ESP32 Devices -->
+        <div class="profile-card">
+            <h2>Registered ESP32 Devices</h2>
+            <ul id="device-list"></ul>
+        </div>
+
+        <!-- Available ESP32 Devices -->
+        <div class="profile-card">
+            <h2>Add a New ESP32 Device</h2>
+            <form id="addDeviceForm">
+                <h3>Available Devices</h3>
+                <ul id="available-devices"></ul>
+            </form>
+        </div>
+    </div>
+
+    <script defer src="/static/js/profile.js"></script>
+</body>
 </html>
