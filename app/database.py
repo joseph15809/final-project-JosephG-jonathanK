@@ -207,7 +207,7 @@ async def add_clothes(name: str, user_id: int, type: str, color: str):
             connection.close()
 
 
-async def remove_clothes(name: str, user_id: int):
+async def remove_clothes(clothes_id: int, user_id: int):
     connection = None
     cursor = None
     try:
@@ -215,8 +215,8 @@ async def remove_clothes(name: str, user_id: int):
         cursor = connection.cursor()
 
         cursor.execute(
-            "DELETE FROM wardrobe WHERE name=%s AND user_id=%s",
-            (name, user_id)
+            "DELETE FROM wardrobe WHERE id=%s AND user_id=%s",
+            (clothes_id, user_id)
         )
         connection.commit()
 
@@ -243,6 +243,7 @@ async def get_user_clothes(user_id: int):
         wardrobe_data = []
         for item in data:
             wardrobe_data.append({
+                "id":item[0],
                 "name": item[1],
                 "type": item[3],
                 "color": item[4]
@@ -255,6 +256,26 @@ async def get_user_clothes(user_id: int):
     finally:
         cursor.close()
         connection.close()   
+
+
+async def update_clothes(clothes_id, name, clothes_type, color):
+    "Updates users clothes info"
+    connection = None
+    cursor = None
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor()
+        query =  "UPDATE wardrobe SET name = %s, type = %s, color = %s WHERE id = %s"
+        cursor.execute(query, (name, clothes_type, color, clothes_id))
+        connection.commit()
+    except Exception as e:
+        connection.rollback()
+        raise Exception(f"Failed to update clothes: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
 
 
 async def get_user_by_email(email: str) -> Optional[dict]:

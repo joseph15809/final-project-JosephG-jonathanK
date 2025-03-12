@@ -1,17 +1,172 @@
-#dashboard-button, #profile-button {
-    background: linear-gradient(135deg, #6e8efb, #a777e3); /* Gradient background */
+/* General Page Styling */
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #a8d9ff, #c3cfe2);
+    color: #333;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+/* Wardrobe Header */
+.wardrobe-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    padding: 20px 30px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* AI Wardrobe Title */
+.team-name {
+    font-size: 28px;
+    font-weight: bold;
+    color: #4A47A3;
+    margin: 0;
+}
+
+/* Buttons Container */
+.buttons-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Buttons */
+#dashboard-button, #profile-button, #add-button, #remove-button {
+    background: linear-gradient(135deg, #6e8efb, #a777e3);
     border: none;
     color: white;
     padding: 12px 24px;
     font-size: 16px;
     font-weight: bold;
-    border-radius: 25px; /* Rounded corners */
+    border-radius: 25px;
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
-.buttons {
-    float: right;
-    margin-right: 5px;
+#dashboard-button:hover, #profile-button:hover, #add-button:hover, #remove-button:hover {
+    background: linear-gradient(135deg, #e67600, #d22661);
+    transform: translateY(-2px);
+}
+
+/* Main Wardrobe Container - 90% Page Width */
+.wardrobe-container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 50px auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Two-Column Layout for Add & Remove Clothes */
+.wardrobe-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+/* Styling for Each Card */
+.wardrobe-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    flex: 1;
+    width: 100%;  /* Ensures full width within parent */
+}
+
+/* Clothes List - Horizontal Layout */
+.clothes-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    padding: 10px;
+}
+
+/* Individual Clothing Card */
+.clothes-card {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    width: 250px;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: relative;
+}
+
+/* Editable Inputs */
+.clothes-card input {
+    border: none;
+    font-size: 16px;
+    width: 100%;
+    outline: none;
+}
+
+.clothes-card .clothing-name {
+    font-weight: bold;
+    font-size: 18px;
+    border: none;
+    outline: none;
+    width: 100%;
+    background: transparent;
+    text-transform: capitalize;
+}
+
+.edit-button, .save-button, .remove-button {
+    padding: 8px 12px;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.edit-button {
+    background-color: #f0f0f0;
+    max-width: 50px;
+}
+
+.save-button {
+    background-color: #4CAF50;
+    color: white;
+    max-width: 50px;
+}
+
+.remove-button {
+    background-color: #d9534f;
+    color: white;
+    position: absolute;
+    right: 10px;
+    bottom: 15px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .wardrobe-top {
+        flex-direction: column; /*Stacks sections on medium screens */
+    }
+}
+
+@media (max-width: 768px) {
+    .wardrobe-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .buttons-container {
+        margin-top: 10px;
+    }
+
+    .wardrobe-card {
+        width: 100%;
+    }
 }

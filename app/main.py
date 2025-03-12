@@ -26,6 +26,7 @@ from .database import (
     clear_database,
     add_clothes,
     remove_clothes,
+    update_clothes,
     get_user_clothes,
     get_users_location,
     update_user
@@ -72,6 +73,13 @@ class UpdateUserInfo(BaseModel):
     current_password: str = None  # Optional for password update
     new_password: str = None
     confirm_password: str = None
+
+class Clothes(BaseModel):
+    id: int    
+    name: str
+    clothes_type: str
+    color: str
+
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
@@ -212,6 +220,7 @@ async def add_to_wardrobe(request: Request):
     form_data = await request.form()
     type = form_data.get("type")
     color = form_data.get("color")
+    name = form_data.get("name")
 
     session_id = request.cookies.get("session_id")
 
@@ -223,7 +232,8 @@ async def add_to_wardrobe(request: Request):
         raise HTTPException(status_code=401, detail="Not authenticated")
     
     user_id = session["user_id"]
-    name = color + ' ' + type
+    if name is None:
+        name = color + ' ' + type
 
     if not user_id:
         raise HTTPException(status_code=401, detail="Not authenticated")
@@ -233,13 +243,8 @@ async def add_to_wardrobe(request: Request):
     return RedirectResponse(url="/wardrobe", status_code=303)
 
 
-@app.post("/wardrobe/remove")
-async def remove_from_wardrobe(request: Request):
-
-    # get form data
-    form_data = await request.form()
-    name = form_data.get("remove-list")
-
+@app.delete("/api/wardrobe/remove")
+async def remove_from_wardrobe(clothes: Clothes, request: Request):
     session_id = request.cookies.get("session_id")
 
     if not session_id:
@@ -254,17 +259,13 @@ async def remove_from_wardrobe(request: Request):
     if not user_id:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
-    await remove_clothes(name, user_id)
+    await remove_clothes(clothes.id, user_id)
+    return {"success": True, "message": "Clothing item removed successfully"}
 
-    return RedirectResponse(url="/wardrobe", status_code=303)
 
 
-@app.get("/api/wardrobe")
-async def get_wardrobe(request: Request):
-    """Get wardrobe data"""
-    connection = get_db_connection()
-    cursor = connection.cursor()
-
+@app.post("/api/wardrobe/update")
+async def update_user_clothes(clothes: Clothes, request: Request):
     session_id = request.cookies.get("session_id")
 
     if not session_id:
@@ -275,10 +276,12 @@ async def get_wardrobe(request: Request):
         raise HTTPException(status_code=401, detail="Not authenticated")
     
     user_id = session["user_id"]
-    
-    wardrobe_data = await get_user_clothes(user_id)
 
-    return JSONResponse(wardrobe_data, status_code=200)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    await update_clothes(clothes.id, clothes.name, clothes.clothes_type, clothes.color)
+    return {"success":f"updated clothing {clothes.id}"}
 
 
 async def generate_outfit_request(prompt: str):
@@ -305,6 +308,28 @@ async def generate_outfit_request(prompt: str):
     generated_outfit = response_data.get("result", {}).get("response", "No outfit recommendation found.")
     
     return {"outfit": generated_outfit}
+
+
+@app.get("/api/wardrobe")
+async def get_wardrobe(request: Request):
+    """Get wardrobe data"""
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    session_id = request.cookies.get("session_id")
+
+    if not session_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    session = await get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    user_id = session["user_id"]
+    
+    wardrobe_data = await get_user_clothes(user_id)
+
+    return JSONResponse(wardrobe_data, status_code=200)
 
 
 @app.get("/api/generate-outfit/{temperature}/{condition}")

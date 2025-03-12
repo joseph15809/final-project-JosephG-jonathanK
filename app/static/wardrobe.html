@@ -1,95 +1,80 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <title>My Wardrobe</title>
     <link rel="stylesheet" href="/static/css/wardrobe.css">
-  </head>
-  <body>
+</head>
+<body>
 
-    <span class = buttons>
-        <button id="dashboard-button">Dashboard</button>
-        <button id="profile-button">Profile</button>
-    </span>
+    <!-- Wardrobe Header -->
+    <header class="wardrobe-header">
+        <h1 class="team-name">AI Wardrobe</h1>
+        <div class="buttons-container">
+            <button id="dashboard-button">Dashboard</button>
+            <button id="profile-button">Profile</button>
+        </div>
+    </header>
 
-    <div class="logo">
-        <h1>Wardrobe</h1>
+    <!-- Main Wardrobe Layout -->
+    <div class="wardrobe-container">
+        <!-- Add & Remove Clothes in Two Columns -->
+        <div class="wardrobe-top">
+            <!-- Add Clothes Section -->
+            <div class="wardrobe-card add-clothes">
+                <h2>Add Clothes</h2>
+                <form class="add-form" action="/wardrobe/add" method="POST">
+                    <label for="type">Clothing Type:</label>
+                    <select id="type" name="type" required>
+                        <option value="Shirt">Shirt</option>
+                        <option value="Sweater">Sweater</option>
+                        <option value="Shorts">Shorts</option>
+                        <option value="Pants">Pants</option>
+                    </select>
+
+                    <label for="color">Color:</label>
+                    <select id="color" name="color" required>
+                        <option value="Black">Black</option>
+                        <option value="Gray">Gray</option>
+                        <option value="Brown">Brown</option>
+                        <option value="Red">Red</option>
+                        <option value="Orange">Orange</option>
+                        <option value="Yellow">Yellow</option>
+                        <option value="Green">Green</option>
+                        <option value="Blue">Blue</option>
+                        <option value="Purple">Purple</option>
+                        <option value="Pink">Pink</option>
+                        <option value="White">White</option>
+                    </select>
+
+                    <label for="name">Clothing Name:</label>
+                    <input type="text" id="name" name="name" placeholder="Optional">
+
+                    <button id="add-button" type="submit">Add Clothes</button>
+                </form>
+            </div>
+
+            <!-- Remove Clothes Section -->
+            <div class="wardrobe-card remove-clothes">
+                <h2>Remove Clothes</h2>
+                <form class="remove-form" action="/wardrobe/remove" method="POST">
+                    <label for="remove-list">Select Item to Remove:</label>
+                    <select id="remove-list" name="remove-list">
+                        <option value="">Loading items...</option>
+                    </select>
+                    <button id="remove-button" type="submit">Remove Clothes</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- My Clothes Section -->
+        <div class="wardrobe-card clothes-section">
+            <h2>My Clothes</h2>
+            <div class="clothes-list" id="clothes-list">
+                <p>No Clothes</p> <!-- This will be replaced dynamically -->
+            </div>
+        </div>
     </div>
-    
-    <div></div>
 
-    <div>
-      <form class="add-form" action="/wardrobe/add" method="POST">
-        <select id="type" name="type" required>
-            <option value="Shirt">Shirt</option>
-            <option value="Sweater">Sweater</option>
-            <option value="Shorts">Shorts</option>
-            <option value="Pants">Pants</option>
-        </select>
-        <select id="color" name="color" required>
-            <option value="Black">Black</option>
-            <option value="Gray">Gray</option>
-            <option value="Brown">Brown</option>
-            <option value="Red">Red</option>
-            <option value="Orange">Orange</option>
-            <option value="Yellow">Yellow</option>
-            <option value="Green">Green</option>
-            <option value="Blue">Blue</option>
-            <option value="Purple">Purple</option>
-            <option value="Pink">Pink</option>
-            <option value="White">White</option>
-        </select>
-        <button id="add-button" type="submit">Add Clothes</button>
-      </form>
-    </div>
-
-    <div>
-        <form class="remove-form" action="/wardrobe/remove" method="POST">
-            <select id="remove-list" name="remove-list">
-                <option value="">Loading items...</option>
-            </select>
-            <button id="remove-button" type="submit">Remove Clothes</button>
-        </form>
-    </div>
-
-    <div>
-        <h2>My Clothes</h2>
-        <span class="clothes-list" id="clothes-list">
-            <p>No Clothes</p>
-        </span>
-    </div>
-
-    <script src="/static/js/wardrobe.js" defer></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            fetch("/api/wardrobe", {
-                method: "GET"
-            })
-            .then(response => response.json())
-            .then(data => {
-                let removeList = document.getElementById("remove-list");
-                let clothesList = document.getElementById("clothes-list");
-                removeList.innerHTML = "";
-                clothesList.innerHTML = "";
-                data.forEach(item => {
-                    const option = document.createElement("option");
-                    const clothes = document.createElement("p");
-                    let optionString = "";
-                    let clothesString = "";
-                    optionString = "<option value='" + item.name + "'>" + item.name + "</option>";
-                    clothesString = "<p>" + item.name + "</p>";
-                    option.innerHTML = optionString;
-                    clothes.innerHTML = clothesString;
-                    removeList.appendChild(option);
-                    clothesList.appendChild(clothes);
-                });
-            })
-            .catch(error => {
-                console.error("Error fetching wardrobe items");
-                removeList.innerHTML = "<option value=''>Error loading items</option>";
-                clothesList.innerHTML = "<p>Error loading clothes</p>";
-            });
-        });
-    </script>
-    
-  </body>
+    <script src="/static/js/wardrobe.js" defer></script>    
+</body>
 </html>
