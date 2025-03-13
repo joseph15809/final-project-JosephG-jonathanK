@@ -11,6 +11,7 @@ import mysql.connector
 from contextlib import asynccontextmanager
 from pydantic import BaseModel
 from datetime import datetime
+import base64
 
 from .database import (
     get_db_connection,
@@ -28,6 +29,8 @@ from .database import (
     remove_clothes,
     update_clothes,
     get_user_clothes,
+    update_user_device,
+    remove_user_device,
     get_users_location,
     update_user
 )
@@ -35,6 +38,8 @@ from .database import (
 load_dotenv()
 PID = os.getenv("UCSD_PID")
 email = os.getenv("UCSD_EMAIL")
+AI_API_URL = "https://ece140-wi25-api.frosty-sky-f43d.workers.dev/api/v1/ai/complete"
+AI_API_IMAGE = "https://ece140-wi25-api.frosty-sky-f43d.workers.dev/api/v1/ai/image"
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -59,9 +64,15 @@ class SensorData(BaseModel):
     unit: str
     timestamp: str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-
-class DeviceRegistration(BaseModel):
+class RegDevice(BaseModel):
     mac_address: str
+    user_id: int = None
+    name: str = None
+
+class DeviceInfo(BaseModel):
+    id: int
+    mac_address: str
+    name: str = None
 
 class DeviceAssignment(BaseModel):
     user_id: int
@@ -80,6 +91,13 @@ class Clothes(BaseModel):
     clothes_type: str
     color: str
 
+class Prompt(BaseModel):
+    text: str
+
+class Image(BaseModel):
+    prompt: str
+    width: int = 512
+    height: int = 512
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
@@ -284,30 +302,21 @@ async def update_user_clothes(clothes: Clothes, request: Request):
     return {"success":f"updated clothing {clothes.id}"}
 
 
-async def generate_outfit_request(prompt: str):
-    """Send an async request to AI API to generate outfit"""
-    AI_API_URL = "https://ece140-wi25-api.frosty-sky-f43d.workers.dev/api/v1/ai/complete"
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        try:
-            ai_response = await client.post(
-                AI_API_URL,
-                headers={
-                    "email": email,
-                    "pid": PID,
-                    "Content-Type": "application/json"
-                },
-                json={"prompt": prompt}
-            )
-        except httpx.TimeoutException:
-            return {"error": "AI API request timed out"} 
-    response_data = ai_response.json()
-
-    if ai_response.status_code != 200 or not response_data.get("success", False):
-        return {"error": f"Failed to generate outfit. Status code: {ai_response.status_code}"}
-
-    generated_outfit = response_data.get("result", {}).get("response", "No outfit recommendation found.")
-    
-    return {"outfit": generated_outfit}
+@app.get("/api/generate-outfit/{temperature}/{condition}")
+async def generate_user_outfit(temperature: int, condition: str, request: Request):
+    session_id = request.cookies.get("session_id")
+    if session_id:
+        session = await get_session(session_id)
+        if session:
+            user_id = session["user_id"]
+            user = await get_user_by_id(user_id)
+            if user:
+                clothes = await get_user_clothes(user_id)
+                weather_text = f"{temperature}°F, {condition}"
+                prompt = f"From these pieces of clothing: {clothes} and based on the weather ({weather_text}), generate an outfit me to wear."
+                outfit = await generate_ai_response(prompt)
+                return JSONResponse(outfit, status_code=200)
+    return JSONResponse({"error": "Failed to authenticate user"}, status_code=401)
 
 
 @app.get("/api/wardrobe")
@@ -332,8 +341,9 @@ async def get_wardrobe(request: Request):
     return JSONResponse(wardrobe_data, status_code=200)
 
 
-@app.get("/api/generate-outfit/{temperature}/{condition}")
-async def generate_user_outfit(temperature: int, condition: str, request: Request):
+@app.post("/api/chatbot-response")
+async def ai_response(prompt: Prompt, request: Request):
+    """Send an async request to AI API to generate response"""
     session_id = request.cookies.get("session_id")
     if session_id:
         session = await get_session(session_id)
@@ -341,12 +351,73 @@ async def generate_user_outfit(temperature: int, condition: str, request: Reques
             user_id = session["user_id"]
             user = await get_user_by_id(user_id)
             if user:
-                clothes = await get_user_clothes(user_id)
-                weather_text = f"{temperature}°F, {condition}"
-                prompt = f"From these pieces of clothing: {clothes} and based on the weather ({weather_text}), generate an outfit me to wear."
-                outfit_result = await generate_outfit_request(prompt)
-                return JSONResponse(outfit_result, status_code=200)
-    return JSONResponse({"error": "Failed to authenticate user"}, status_code=401) 
+                response_data = await generate_ai_response(prompt.text)
+                return JSONResponse(response_data, status_code=200)
+    raise HTTPException(status_code=401, detail="Not authenticated")
+
+
+async def generate_ai_response(prompt: str):
+    """Send an async request to AI API to generate outfit"""
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        try:
+            ai_response = await client.post(
+                AI_API_URL,
+                headers={
+                    "email": email,
+                    "pid": PID,
+                    "Content-Type": "application/json"
+                },
+                json={"prompt": prompt}
+            )
+        except httpx.TimeoutException:
+            return {"error": "AI API request timed out"} 
+    response_data = ai_response.json()
+
+    if ai_response.status_code != 200 or not response_data.get("success", False):
+        return {"error": f"Failed to generate outfit. Status code: {ai_response.status_code}"}
+
+    ai_response = response_data.get("result", {}).get("response", "Could not generate a response.")
+    
+    return {"response": ai_response}
+
+@app.post("/api/image")
+async def generate_image(image: Image, request: Request):
+    session_id = request.cookies.get("session_id")
+    if session_id:
+        session = await get_session(session_id)
+        if session:
+            user_id = session["user_id"]
+            user = await get_user_by_id(user_id)
+            if user:
+                response_data = await generate_ai_image(image.prompt, image.width, image.height)
+                return JSONResponse(response_data, status_code=200)
+    raise HTTPException(status_code=401, detail="Not authenticated")
+
+async def generate_ai_image(prompt: str, width: int, height: int):
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        try:
+            ai_response = await client.post(
+                AI_API_IMAGE,
+                headers={
+                    "email": email,
+                    "pid": PID,
+                    "Content-Type": "application/json"
+                },
+                json={"prompt": prompt, "width":width, "height": height}
+            )
+        except httpx.TimeoutException:
+            return {"error": "AI API request timed out"} 
+    json_response = ai_response.json()
+    bit_stream = json_response["result"]["bit_stream"]
+    ai_image = bitstream_to_base64(bit_stream)
+    return JSONResponse({"image": ai_image})
+
+
+def bitstream_to_base64(bitstream):
+    """Convert a bitstream to a Base64-encoded string."""
+    byte_data = base64.b64decode(bitstream)  # Convert bitstream to bytes
+    base64_str = base64.b64encode(byte_data).decode("utf-8")  # Encode as Base64
+    return base64_str
 
 
 @app.get("/dashboard", response_class=HTMLResponse)
@@ -428,8 +499,8 @@ async def get_user_location(user_id: int, request: Request):
     return {"location": location}
 
 
-@app.post("/api/register_device/")
-def register_device(device: DeviceRegistration):
+@app.post("/api/register_device")
+def register_device(device: RegDevice):
     """Registers an ESP32 device using its MAC address."""
     
     connection = get_db_connection()
@@ -444,11 +515,14 @@ def register_device(device: DeviceRegistration):
             return {"message": "Device already registered", "device_id": existing_device["device_id"]}
 
         # Register new device
-        cursor.execute("INSERT INTO devices (mac_address) VALUES (%s)", (device.mac_address,))
+        if device.name is None and device.user_id is None:
+            cursor.execute("INSERT INTO devices (mac_address) VALUES (%s)", (device.mac_address,))
+   
+        else:
+            cursor.execute("INSERT INTO devices (name, user_id, mac_address) VALUES (%s, %s, %s)", (device.name, device.user_id, device.mac_address,))
         connection.commit()
-
         device_id = cursor.lastrowid  # Get the new device's ID
-        return {"message": "Device registered successfully", "device_id": device_id}
+        return {"device_id": device_id}
 
     except Exception as e:
         connection.rollback()
@@ -457,6 +531,42 @@ def register_device(device: DeviceRegistration):
     finally:
         cursor.close()
         connection.close()
+
+
+@app.post("/api/update_device")
+async def update_device(device: DeviceInfo, request: Request):
+    session_id = request.cookies.get("session_id")
+    if not session_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    session = await get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    user_id = session["user_id"]
+
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    await update_user_device(device.name, device.mac_address, device.id)
+    return {"success": True, "message": "device updated"}
+
+
+@app.delete("/api/remove_device")
+async def delete_device(device: DeviceInfo, request: Request):
+    session_id = request.cookies.get("session_id")
+    if not session_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    session = await get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    user_id = session["user_id"]
+
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    await remove_user_device(device.id, device.mac_address)
+    return {"success": True, "message": "device removed"}
 
 
 @app.get("/api/temperature/{mac_address}")

@@ -1,6 +1,9 @@
 document.addEventListener("DOMContentLoaded", function () {
     const wardrobeBtn = document.getElementById("wardrobe-button");
     const dashboardBtn = document.getElementById("dashboard-button");
+    const manualBtn = document.getElementById("manual-add");
+    const closeBtn = document.getElementById("close-form");  
+
     wardrobeBtn.addEventListener("click", () => {
         window.location.href = "/wardrobe";
     });
@@ -9,24 +12,58 @@ document.addEventListener("DOMContentLoaded", function () {
         window.location.href = "/dashboard";
     });
 
-    loadUserInfo();
+    manualBtn.addEventListener("click", () => {
+        document.getElementById("manual-add-container").style.display = "block";
+        document.getElementById("overlay").style.display = "block"; 
+    });
+
+    closeBtn.addEventListener("click", () => {
+        document.getElementById("manual-add-container").style.display = "none";
+        document.getElementById("overlay").style.display = "none"; 
+    });
+
+    getUserId().then(userId => {
+        loadUserInfo();    
+        loadAvailableDevices(userId);
+        loadUserDevices(userId);    
+    
+        document.getElementById("add-device-form").addEventListener("submit", function (event) {
+            event.preventDefault();
+            const form_mac_address = document.getElementById("mac_address").value;
+            const form_name = document.getElementById("device-name").value;
+            manuallyAddDevice(userId, form_mac_address, form_name);
+        });
+    });
+    
+
     document.getElementById("update-user-form").addEventListener("submit", function (event) {
         event.preventDefault();
         updateUserInfo();
     });
-    getUserId();
+
 });
+
+// function to manually add device
+function manuallyAddDevice(userId, mac_address, name) {
+    fetch(`/api/register_device`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({"mac_address": mac_address, "user_id": userId, "name": name})
+    })
+    .then(response => response.json())
+    .then(data => {
+        loadUserDevices(userId);
+    })
+    .catch(error => console.error("Error loading user info:", error));
+}
 
 // Fetch user id
 function getUserId() {
     fetch(`/api/getId`)
+    return fetch(`/api/getId`)
         .then(response => response.json())
-        .then(data => {
-            userId = data.user_id;
-            loadAvailableDevices(userId);
-            loadUserDevices(userId);
-        })
-    .catch(error => console.error("Error getting User ID:", error))
+        .then(data => data.user_id)  // Return the actual user ID
+        .catch(error => console.error("Error getting User ID:", error));
 }
 
 // Fetch user info
@@ -37,7 +74,6 @@ function loadUserInfo() {
         .then(data => {
             if (data.error) {
                 console.error("Error fetching user info:", data.error);
-                return;
             }
 
             document.getElementById("name").value = data.name;
@@ -98,13 +134,118 @@ function loadUserDevices(userId) {
             }
 
             data.devices.forEach(device => {
-                const listItem = document.createElement("li");
-                listItem.textContent = `Device ID: ${device.device_id}, MAC: ${device.mac_address}, Name: ${device.name}`;
-                deviceList.appendChild(listItem);
+                // Create the device card
+                const card = document.createElement("div");
+                card.classList.add("device-card");
+
+                // Create container for label + input (flexbox)
+                const detailsContainer = document.createElement("div");
+                detailsContainer.classList.add("device-details");
+
+                // Name Label & Input
+                const nameLabel = document.createElement("label");
+                nameLabel.textContent = "Device Name:";
+                const nameInput = document.createElement("input");
+                nameInput.type = "text";
+                nameInput.value = device.name;
+                nameInput.disabled = true;
+
+                // MAC Address Label & Input
+                const macLabel = document.createElement("label");
+                macLabel.textContent = "MAC Address:";
+                const macInput = document.createElement("input");
+                macInput.type = "text";
+                macInput.value = device.mac_address;
+                macInput.disabled = true;
+
+                // Edit button
+                const editButton = document.createElement("button");
+                editButton.classList.add("edit-button", "device-card-button");
+                editButton.textContent = "Edit";
+
+                // Save button (Initially Hidden)
+                const saveButton = document.createElement("button");
+                saveButton.classList.add("save-button", "device-card-button", "save-btn");
+                saveButton.textContent = "Save";
+                saveButton.style.display = "none"; // Hidden by default
+
+                // Remove button
+                const removeButton = document.createElement("button");
+                removeButton.classList.add("remove-button", "device-card-button", "remove-btn");
+                removeButton.textContent = "Remove";
+
+                // Edit Button Functionality
+                editButton.addEventListener("click", () => {
+                    nameInput.disabled = false;
+                    macInput.disabled = false;
+                    editButton.style.display = "none"; // Hide Edit button
+                    saveButton.style.display = "inline-block"; // Show Save button
+                });
+
+                // Save Button Functionality
+                saveButton.addEventListener("click", () => {
+                    fetch(`/api/update_device`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            "id": device.device_id,
+                            "mac_address": macInput.value,
+                            "name": nameInput.value
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(() => {
+                        nameInput.disabled = true;
+                        macInput.disabled = true;
+                        editButton.style.display = "inline-block"; // Show Edit button
+                        saveButton.style.display = "none"; // Hide Save button
+                    })
+                    .catch(error => console.error("Error updating device:", error));
+                });
+
+                // Remove Button Functionality
+                removeButton.addEventListener("click", () => {
+                    fetch(`/api/remove_device`, {
+                        method: "DELETE",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ "id": device.device_id, "mac_address": device.mac_address })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            card.remove(); // Remove the device from UI
+                        } else {
+                            alert("Error removing device.");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error:", error);
+                        alert("Failed to remove device.");
+                    });
+                });
+
+                // Append label and input pairs
+                detailsContainer.appendChild(nameLabel);
+                detailsContainer.appendChild(nameInput);
+                detailsContainer.appendChild(macLabel);
+                detailsContainer.appendChild(macInput);
+
+                // Button Container (Edit & Remove buttons on the same line)
+                const buttonContainer = document.createElement("div");
+                buttonContainer.classList.add("button-container");
+                buttonContainer.appendChild(editButton);
+                buttonContainer.appendChild(saveButton);
+                buttonContainer.appendChild(removeButton);
+
+                // Append elements to the card
+                card.appendChild(detailsContainer);
+                card.appendChild(buttonContainer);
+                deviceList.appendChild(card);
             });
         })
         .catch(error => console.error("Error loading user devices:", error));
 }
+
 
 // Fetch all available devices (devices not yet assigned to any user)
 function loadAvailableDevices(userId) {

@@ -10,7 +10,8 @@ import time
 
 load_dotenv()
 url = "http://localhost:8000/api/temperature"
-BROKER = "test.mosquitto.org"
+reg_url = "http://localhost:8000/api/register_device/"
+BROKER = "broker.emqx.io"
 PORT = 1883
 BASE_TOPIC = os.getenv("BASE_TOPIC")
 TOPIC = BASE_TOPIC + "/#"
@@ -49,6 +50,12 @@ def on_message(client, userdata, message):
                 "timestamp": timestamp
             }
             print(temperature_data)
+            regResponse = requests.post(reg_url, json={"mac_address": payload["mac_address"]})
+            if regResponse.status_code == 200:
+                print(f"mac_address: {payload['mac_address']}")
+            else:
+                print(f"[ERROR] Failed to send data to server: {regResponse.status_code}")
+
             response = requests.post(url, json=temperature_data)
             
             if response.status_code == 200:
