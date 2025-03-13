@@ -278,6 +278,48 @@ async def update_clothes(clothes_id, name, clothes_type, color):
             connection.close()
 
 
+async def remove_user_device(device_id, mac_address):
+    "deletes device from db"
+    connection = None
+    cursor = None
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor()
+        cursor.execute(
+            "DELETE FROM devices WHERE device_id=%s AND mac_address=%s",
+            (device_id, mac_address)
+        )
+        connection.commit()
+    except Exception as e:
+        connection.rollback()
+        raise Exception(f"Failed to remove device: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+async def update_user_device(name, mac_address, device_id):
+    "update device info"
+    connection = None
+    cursor = None
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor()
+        query = "UPDATE devices SET name = %s, mac_address = %s WHERE device_id = %s"
+        cursor.execute(query, (name, mac_address, device_id))
+        connection.commit()
+    except Exception as e:
+        connection.rollback()
+        raise Exception(f"Failed to remove device: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close() 
+
+
 async def get_user_by_email(email: str) -> Optional[dict]:
     """Retrieve user from database by email."""
     connection = None

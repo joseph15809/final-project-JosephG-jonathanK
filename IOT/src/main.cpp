@@ -30,8 +30,8 @@ void setup() {
     }
 
     // Connect to WiFi
-    // wifi.connectToWPAEnterprise(wifiSsid, ucsdUsername, ucsdPassword);
-    wifi.connectToWiFi(wifiSsid, nonEnterpriseWifiPassword);
+    wifi.connectToWPAEnterprise(wifiSsid, ucsdUsername, ucsdPassword);
+    // wifi.connectToWiFi(wifiSsid, nonEnterpriseWifiPassword);
 
 }
 

@@ -33,7 +33,7 @@ body {
 }
 
 /* Buttons */
-#wardrobe-button, #dashboard-button, #logout-button, #update-button, #add-button {
+#wardrobe-button, #dashboard-button, #logout-button, #update-button, #add-button, #manual-add, #add-device, #close-form {
     background: linear-gradient(135deg, #6e8efb, #a777e3);
     border: none;
     color: white;
@@ -46,13 +46,13 @@ body {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
-#wardrobe-button:hover, #dashboard-button:hover, #logout-button:hover, #update-button:hover, #add-button:hover {
+#wardrobe-button:hover, #dashboard-button:hover, #logout-button:hover, #update-button:hover, #add-button:hover, #manual-add:hover, #add-device:hover, #close-form:hover {
     background: linear-gradient(135deg, #e67600, #d22661);
     transform: translateY(-2px);
 }
 
 /* Click effect */
-#wardrobe-button:active, #dashboard-button:active, #logout-button:active, #update-button:active, #add-button:active {
+#wardrobe-button:active, #dashboard-button:active, #logout-button:active, #update-button:active, #add-button:active, #manual-add:active, #add-device:active, #close-form:active {
     transform: translateY(2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
@@ -121,6 +121,120 @@ input:focus {
     padding: 0;
 }
 
+.manual-add-container {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    z-index: 1000;
+    min-width: 300px;
+}
+
+/* Overlay to blur background */
+.overlay {
+    display: none; 
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+.device-card {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    text-align: left;
+    width: 80%;
+    max-width: 500px;
+    margin: 10px auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Device Details Section */
+.device-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.device-details label {
+    font-weight: bold;
+    width: 40%;
+    text-align: left;
+}
+
+.device-details input {
+    width: 55%;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    text-align: left;
+    margin-left: 10px;
+}
+
+.device-details div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Button Container */
+.button-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+/* button styling */
+.device-card button {
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.save-btn {
+    background: linear-gradient(135deg, #28a745, #218838);
+}
+
+.save-btn:hover {
+    background: linear-gradient(135deg, #34d058, #2c974b);
+    transform: translateY(-2px);
+}
+
+.remove-btn {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+}
+
+.remove-btn:hover {
+    background: linear-gradient(135deg, #ff4d4d, #d41b2c);
+    transform: translateY(-2px);
+}
+
+.edit-button {
+    background: linear-gradient(135deg, #6e8efb, #a777e3);
+}
+
+.edit-button:hover {
+    background: linear-gradient(135deg, #e67600, #d22661);
+}
+
 #device-list li, #available-devices li {
     background: #fefafa;
     padding: 15px;
@@ -130,7 +244,6 @@ input:focus {
     font-size: 16px;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
     .profile-header {
         flex-direction: column;

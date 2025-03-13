@@ -85,7 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
             removeButton.addEventListener("click", () => {
                 fetch(`/api/wardrobe/remove`, {
                     method: "DELETE",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {"Content-Type": "application/json"},
                     body: JSON.stringify({"id": item.id, "name": nameInput.value, "clothes_type": typeInput.value, "color": colorInput.value})
                 })
                 .then(response => response.json())

@@ -28,6 +28,8 @@ from .database import (
     remove_clothes,
     update_clothes,
     get_user_clothes,
+    update_user_device,
+    remove_user_device,
     get_users_location,
     update_user
 )
@@ -59,9 +61,15 @@ class SensorData(BaseModel):
     unit: str
     timestamp: str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-
-class DeviceRegistration(BaseModel):
+class RegDevice(BaseModel):
     mac_address: str
+    user_id: int = None
+    name: str = None
+
+class DeviceInfo(BaseModel):
+    id: int
+    mac_address: str
+    name: str = None
 
 class DeviceAssignment(BaseModel):
     user_id: int
@@ -428,8 +436,8 @@ async def get_user_location(user_id: int, request: Request):
     return {"location": location}
 
 
-@app.post("/api/register_device/")
-def register_device(device: DeviceRegistration):
+@app.post("/api/register_device")
+def register_device(device: RegDevice):
     """Registers an ESP32 device using its MAC address."""
     
     connection = get_db_connection()
@@ -444,11 +452,14 @@ def register_device(device: DeviceRegistration):
             return {"message": "Device already registered", "device_id": existing_device["device_id"]}
 
         # Register new device
-        cursor.execute("INSERT INTO devices (mac_address) VALUES (%s)", (device.mac_address,))
+        if device.name is None and device.user_id is None:
+            cursor.execute("INSERT INTO devices (mac_address) VALUES (%s)", (device.mac_address,))
+   
+        else:
+            cursor.execute("INSERT INTO devices (name, user_id, mac_address) VALUES (%s, %s)", (device.name, device.user_id, device.mac_address,))
         connection.commit()
-
         device_id = cursor.lastrowid  # Get the new device's ID
-        return {"message": "Device registered successfully", "device_id": device_id}
+        return {"device_id": device_id}
 
     except Exception as e:
         connection.rollback()
@@ -457,6 +468,42 @@ def register_device(device: DeviceRegistration):
     finally:
         cursor.close()
         connection.close()
+
+
+@app.post("/api/update_device")
+async def update_device(device: DeviceInfo, request: Request):
+    session_id = request.cookies.get("session_id")
+    if not session_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    session = await get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    user_id = session["user_id"]
+
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    await update_user_device(device.name, device.mac_address, device.id)
+    return {"success": True, "message": "device updated"}
+
+
+@app.delete("/api/remove_device")
+async def delete_device(device: DeviceInfo, request: Request):
+    session_id = request.cookies.get("session_id")
+    if not session_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    session = await get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    user_id = session["user_id"]
+
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    await remove_user_device(device.id, device.mac_address)
+    return {"success": True, "message": "device removed"}
 
 
 @app.get("/api/temperature/{mac_address}")
