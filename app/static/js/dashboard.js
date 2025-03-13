@@ -7,6 +7,12 @@ document.addEventListener("DOMContentLoaded", function(){
     const wardrobeBtn = document.getElementById("wardrobe-button");
     const profileBtn = document.getElementById("profile-button");
     const outfitBtn = document.getElementById("outfit-button");
+    const chatbotButton = document.getElementById("chatbot-button");
+    const chatbotContainer = document.getElementById("chatbot-container");
+    const closeChatbot = document.getElementById("close-chatbot");
+    const sendChatbotMessage = document.getElementById("send-chatbot-message");
+    const chatbotInput = document.getElementById("chatbot-input");
+    const chatbotMessages = document.getElementById("chatbot-messages");    
 
     wardrobeBtn.addEventListener("click", () => {
         window.location.href = "/wardrobe";
@@ -18,6 +24,27 @@ document.addEventListener("DOMContentLoaded", function(){
 
     outfitBtn.addEventListener("click",() =>{
         generateOutfit()
+    });
+
+    chatbotButton.addEventListener("click", function () {
+        chatbotContainer.style.display = "flex";
+        if (chatbotMessages.innerHTML.trim() === "") {
+            addMessage("AI", "Hello, how can I help you?");
+        }
+    });
+
+    closeChatbot.addEventListener("click", function () {
+        chatbotContainer.style.display = "none";
+    });
+
+    sendChatbotMessage.addEventListener("click", function () {
+        sendMessage();
+    });
+
+    chatbotInput.addEventListener("keypress", function (event) {
+        if (event.key === "Enter") {
+            sendMessage();
+        }
     });
 
     fetch(`/api/getId`)
@@ -51,6 +78,45 @@ document.addEventListener("DOMContentLoaded", function(){
             });
         })
         .catch(error => console.error("Error getting User ID:", error));
+
+
+    function sendMessage() {
+        const userMessage = chatbotInput.value.trim();
+        if (userMessage === "") return;
+
+        // Display user message on right
+        addMessage("User", userMessage);
+        chatbotInput.value = "";
+
+        // Send message to backend AI
+        fetch("/api/chatbot-response", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ "text": userMessage })
+        })
+        .then(response => response.json())
+        .then(data => {
+            addMessage("AI", data.response);
+        })
+        .catch(error => {
+            console.error("Chatbot error:", error);
+            addMessage("AI", "Sorry, something went wrong.");
+        });
+    }
+
+    function addMessage(sender, text) {
+        const messageElement = document.createElement("p");
+        messageElement.textContent = text;
+
+        if (sender === "AI") {
+            messageElement.classList.add("ai-message");
+        } else {
+            messageElement.classList.add("user-message");
+        }
+
+        chatbotMessages.appendChild(messageElement);
+        chatbotMessages.scrollTop = chatbotMessages.scrollHeight; // Auto-scroll to latest message
+    }
 });
 
 // Function to get weather from api
@@ -102,8 +168,7 @@ function generateOutfit() {
         .then(response => response.json())
         .then(data => {
             thinkingText.style.display = "none";
-            const outfitText = data.outfit;
-            typeText("outfit-text", outfitText);
+            typeText("outfit-text", data.response);
         })
         .catch(error => {
             thinkingText.style.display = "none"; // Hide thinking if error occurs
@@ -113,7 +178,7 @@ function generateOutfit() {
 }
 
 // Function for typing effect
-function typeText(elementId, text, speed = 50) {
+function typeText(elementId, text, speed = 25) {
     let i = 0;
     const element = document.getElementById(elementId);
     element.innerHTML = "";

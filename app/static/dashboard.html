@@ -40,10 +40,28 @@
       <button id="outfit-button">Get Outfit</button>
     </div>
 
+    
     <!-- ESP32 Data Graph-->
     <h2>ESP32 Temperature Data</h2>
     <div id="charts-container"></div>
   </div>
+
+  <button id="chatbot-button">
+    <i class="fas fa-comment"></i> AI Assistant
+</button>
+
+<!-- Chatbot Popup -->
+<div id="chatbot-container">
+    <div id="chatbot-header">
+        <h3>AI Chatbot</h3>
+        <button id="close-chatbot">&times;</button>
+    </div>
+    <div id="chatbot-messages">
+        <p><strong>AI:</strong> Hello, how can I help you?</p>
+    </div>
+    <input type="text" id="chatbot-input" placeholder="Ask me anything..." />
+    <button id="send-chatbot-message">Send</button>
+</div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script defer src="/static/js/dashboard.js"></script>

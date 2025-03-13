@@ -2,8 +2,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const wardrobeBtn = document.getElementById("wardrobe-button");
     const dashboardBtn = document.getElementById("dashboard-button");
     const manualBtn = document.getElementById("manual-add");
-    const closeBtn = document.getElementById("close-form");
-    const addDevice = document.getElementById("add-device");
+    const closeBtn = document.getElementById("close-form");  
+
     wardrobeBtn.addEventListener("click", () => {
         window.location.href = "/wardrobe";
     });
@@ -22,31 +22,48 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("overlay").style.display = "none"; 
     });
 
-    addDevice.addEventListener("click", () => {
-
+    getUserId().then(userId => {
+        loadUserInfo();    
+        loadAvailableDevices(userId);
+        loadUserDevices(userId);    
+    
+        document.getElementById("add-device-form").addEventListener("submit", function (event) {
+            event.preventDefault();
+            const form_mac_address = document.getElementById("mac_address").value;
+            const form_name = document.getElementById("device-name").value;
+            manuallyAddDevice(userId, form_mac_address, form_name);
+        });
     });
+    
 
-    loadUserInfo();
     document.getElementById("update-user-form").addEventListener("submit", function (event) {
         event.preventDefault();
         updateUserInfo();
     });
-    getUserId();
+
 });
 
 // function to manually add device
-
+function manuallyAddDevice(userId, mac_address, name) {
+    fetch(`/api/register_device`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({"mac_address": mac_address, "user_id": userId, "name": name})
+    })
+    .then(response => response.json())
+    .then(data => {
+        loadUserDevices(userId);
+    })
+    .catch(error => console.error("Error loading user info:", error));
+}
 
 // Fetch user id
 function getUserId() {
     fetch(`/api/getId`)
+    return fetch(`/api/getId`)
         .then(response => response.json())
-        .then(data => {
-            userId = data.user_id;
-            loadAvailableDevices(userId);
-            loadUserDevices(userId);
-        })
-    .catch(error => console.error("Error getting User ID:", error))
+        .then(data => data.user_id)  // Return the actual user ID
+        .catch(error => console.error("Error getting User ID:", error));
 }
 
 // Fetch user info
@@ -57,7 +74,6 @@ function loadUserInfo() {
         .then(data => {
             if (data.error) {
                 console.error("Error fetching user info:", data.error);
-                return;
             }
 
             document.getElementById("name").value = data.name;
