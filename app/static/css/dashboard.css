@@ -17,7 +17,6 @@ body {
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* AI Wardrobe Title */
 .team-name {
   font-size: 28px;
   font-weight: bold;
@@ -61,7 +60,7 @@ body {
 .dashboard-container {
   max-width: 900px;
   margin: 50px auto;
-  background: linear-gradient(-45deg, #e06fcd, #79a3e5, #d96d8f);
+  background: linear-gradient(-45deg, #e7f0ff);
   animation: gradient 15s ease infinite;
   padding: 30px;
   border-radius: 12px;
