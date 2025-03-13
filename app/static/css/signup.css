@@ -1,48 +1,96 @@
+/* Fonts */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap");
+
+* {
+    padding: 0;
+    margin: 0;
+}
+
+img {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    margin: 0;
+}
+
 .signup {
-    background-color: white;
+    position: relative;
+    height: 100vh;
+    display: grid;
+    align-items: center;
+}
+
+.signup-form {
+    position: relative;
     margin: auto;
+    background-color: hsla(0, 0%, 100%, .01);
+    color: hsl(0, 0%, 100%);
     width: fit-content;
-    padding: 10px;
+    padding: 20px;
+    border: 2px solid hsla(0, 0%, 100%, .7);
     border-radius: 25px;
+    backdrop-filter: blur(8px);
+    font-family: "Poppins", sans-serif;
+    font-size: 2rem;
+}
+
+input {
+    width: 25vw;
+    height: 5vh;
+    padding-inline: 1.25rem;
+    border-radius: 25px;
+    border-color: whitesmoke;
+    background-color: hsla(0, 0%, 100%, .5);
+    margin-bottom: 0.6rem;
+}
+
+input::placeholder {
+    color: hsl(0, 0%, 0%);
 }
   
-h2 {
-    margin-top: 10%;
+h1 {
     text-align: center;
+    font-family: "Poppins", sans-serif;
+    font-size: 2rem;
+    color: hsl(0, 10%, 10%);
+    margin-top: 5%;
+    margin-bottom: 5%;
 }
 
 label {
     display: flex;
-}
-  
-input {
-    width: 25vw;
-    border-style: outset;
-    border-color: whitesmoke;
-    margin-top: 5px;
-    margin-bottom: 5px;
+    font-family: "Poppins", sans-serif;
+    font-size: 0.8rem;
 }
 
 p {
     text-align: center;
+    font-family: "Poppins", sans-serif;
+    font-size: 0.8rem;
+    margin-bottom: 1.5%;
+}
+
+a {
+    text-decoration: none;
+    font-weight: bold;
+    color: linear-gradient(135deg, #6e8efb, #a777e3); 
 }
 
 #submit{
-    background: linear-gradient(135deg, #6e8efb, #a777e3); /* Gradient background */
-    border: none;
+    background: linear-gradient(135deg, #6e8efb, #a777e3); 
     color: white;
+    width: 100%;
+    border: none;
     padding: 8px 8px;
-    font-size: 12px;
+    font-family: "Poppins", sans-serif;
+    font-size: 0.8rem;
     font-weight: bold;
-    border-radius: 25px; /* Rounded corners */
+    border-radius: 4rem;
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     margin-top: 5px;
     margin-bottom: 10%;
 }
-
-body {
-    background: linear-gradient(135deg, #6e8efb, #a777e3); /* Gradient background */
-}
-

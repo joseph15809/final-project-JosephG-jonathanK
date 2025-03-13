@@ -3,32 +3,33 @@
 
     <head>
         <meta charset="UTF-8">
-        <title>Login</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="/static/css/login.css">
-    </head>
+        <title>Log In</title>
+    </head> 
 
     <body>
-        <div class="logo">
-            <h1>Team Name</h1>
-        </div>
 
         <div class="login">
-            <h2>Sign In</h2>
-            <form action="/login" method="POST">
-                <div>
-                    <label for="email">Email:</label>
-                    <input type="text" id="email" name="email" placeholder="Enter your email" required>
+            <img src="../static/images/background-image.jpg" alt="image">
+            <form action="/login" method="POST" class="login-form">
+                <h1>Log In</h1>
+                <div class="login-inputs">
+                    <div class="input-field">
+                        <input type="email" id="email" name="email" placeholder="Email" required>
+                    </div>
+                    <div class="input-field">
+                        <input type="password" id="password" name="password" placeholder="Password" required>
+                    </div>
+                    <button id="submit" type="submit">Log in</button>
+    
+                    <p>Don't have an account?</p>
+                    <p><a href="/signup"> Click here to sign up!</a></p>
                 </div>
-                <div>
-                    <label for="email">Password:</label>
-                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
-                </div>
-                <button id="submit" type="submit">Log In</button>
-
-                <p>Don't have an account?</p>
-                <p><a href="/signup">Sign up here!</a></p>
             </form>
+
         </div>
+
     </body>
 
 </html>
