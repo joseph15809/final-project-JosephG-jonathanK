@@ -1,33 +1,42 @@
 <!DOCTYPE html>
 <html>
-
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="/static/css/homepage.css">
+        <link rel="icon" type="image/x-icon" href="/static/images/clothing-favicon.webp">
         <title>Home Page</title>
     </head>
-
     <body>
-        <span class = buttons>
-            <button id="login">Log In</button>
-            <button id="signup">Sign Up</button>
-        </span>
+        <header class="homepage-header">
+            <h1>Homepage</h1>
+            <span class="buttons">
+                <button id="login">Login</button>
+                <button id="signup">Signup</button>
+            </span>
+        </header>
+        <div class="homepage">
 
-        <div class="logo">
-            <h1>Team Name</h1>
+            <div class="project-container">
+                <h2 id="project-header">Tech Assignment 7</h2>
+                <p class="project-description">
+                    We created a secure and personal IoT wardrobe management app where users can create an account, log into an existing account, and maintain secure sessions. Upon authentication users are directed to their personalized profile where they can register new sensor devices to their account, monitor real-time environmental data, and view temperature trends in their city. Authorized users are also given access to their personal wardrobe and dashboard, where they can keep track of all of their clothes by adding/removing items from their closet, or even chat with their AI-powered assistant!
+                </p>
+            </div>
+            <div class="team-container"> 
+                <h2 id="team-header">Meet the team!</h2>
+                <div class="team-description">
+                    <span class="jonathan">
+                        <img src="../static/images/jonathan-image.png" alt="jonathan-image">
+                        <p class="member-description">Hello, my name is Jonathan Kook. I am a second year transfer student majoring in computer engineering. When I'm not busy with school, I like to watch basketball, play video games, or hang out with my friends. </p>
+                    </span>
+                    <span class="joseph">
+                        <img src="../static/images/joseph-image.png" alt="joseph-image">
+                        <p class="member-description">Hello my name is Joseph Gonzalez, I am a second year transfer as a electrical engineering major at UCSD. I enjoy road trips, cookouts, snowboarding, and playing video games. </p>
+                    </span>
+                </div>
+            </div>
         </div>
-
-        <div class="project-container">
-            <h2>Project Description</h2>
-            <p>Description goes here</p>
-        </div>
-
-        <div class="team-container"> 
-            <h2>Team Description</h2>
-            <p>Description goes here</p>
-        </div>
-        
         <script src="/static/js/homepage.js" defer></script>
     </body>
 </html>

@@ -61,7 +61,8 @@ body {
 .dashboard-container {
   max-width: 900px;
   margin: 50px auto;
-  background: white;
+  background: linear-gradient(-45deg, #e06fcd, #79a3e5, #d96d8f);
+  animation: gradient 15s ease infinite;
   padding: 30px;
   border-radius: 12px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
@@ -80,7 +81,9 @@ body {
 }
 
 .card {
-  background: white;
+  background-color: hsla(0, 0%, 100%, .6);
+  border: 2px solid hsla(0, 0%, 100%, .7);
+  backdrop-filter: blur(8px);
   padding: 20px;
   margin: 20px auto;
   width: 80%;

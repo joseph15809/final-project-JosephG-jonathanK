@@ -1,45 +1,35 @@
 <!DOCTYPE html>
 <html>
-    
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="/static/css/signup.css">
+        <link rel="icon" type="image/x-icon" href="/static/images/clothing-favicon.webp">
         <title>Sign Up</title>
     </head>
-
     <body>
-
         <div class="signup">
             <img src="../static/images/background-image.jpg" alt="image">
             <form action="/signup" method="POST" class="signup-form">
                 <h1>Sign Up</h1>
                 <div class="signup-inputs">
-
                     <div class="input-field">
                         <input type="text" id="name" name="name" placeholder="Name" required>
                     </div>
-
                     <div class="input-field">
                         <input type="email" id="email" name="email" placeholder="Email" required>
                     </div>
-
                     <div class="input-field">
                         <input type="password" id="password" name="password" placeholder="Password" required>
                     </div>
-
                     <div class="input-field">
                         <input type="text" id="location" name="location" placeholder="Location" required>
                     </div>
-                    
                     <button id="submit" type="submit">Sign up</button>
-    
                     <p>Already have an account?</p>
                     <p><a href="/login">Click here to log in!</a></p>
                 </div>
             </form>
-
         </div>
-
     </body>
 </html>
