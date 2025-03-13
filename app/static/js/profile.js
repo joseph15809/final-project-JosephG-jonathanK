@@ -99,8 +99,12 @@ function loadUserDevices(userId) {
 
             data.devices.forEach(device => {
                 const listItem = document.createElement("li");
+                const removeButton = document.createElement("button");
+                removeButton.classList.add("remove-button");
+                removeButton.textContent = "Remove";
                 listItem.textContent = `Device ID: ${device.device_id}, MAC: ${device.mac_address}, Name: ${device.name}`;
                 deviceList.appendChild(listItem);
+                deviceList.appendChild(removeButton);
             });
         })
         .catch(error => console.error("Error loading user devices:", error));
