@@ -57,13 +57,13 @@ document.addEventListener("DOMContentLoaded", function(){
                 chartContainer.innerHTML = "";
 
                 devices.forEach(device => {
-                    const { device_id, mac_address } = device;
+                    const { device_id, name, mac_address } = device;
                     console.log(mac_address);
 
                     // Create a new chart canvas for each device
                     const chartWrapper = document.createElement("div");
                     chartWrapper.innerHTML = `
-                        <h3>Device ${device_id} Temperature</h3>
+                        <h3>Device ${name} Temperature</h3>
                         <canvas id="chart-${device_id}"></canvas>
                     `;
                     chartContainer.appendChild(chartWrapper);
