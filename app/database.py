@@ -40,8 +40,7 @@ def get_db_connection(
                 user=os.getenv("MYSQL_USER"),
                 password=os.getenv("MYSQL_PASSWORD"),
                 database=os.getenv("MYSQL_DATABASE"),
-                ssl_ca=os.getenv('MYSQL_SSL_CA'),  # Path to CA certificate file
-                ssl_verify_identity=True
+                ssl_ca=os.getenv('MYSQL_SSL_CA')  # Path to CA certificate file
             )
 
             # Test the connection
