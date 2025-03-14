@@ -28,9 +28,15 @@ def get_db_connection(
 
     while attempt <= max_retries:
         try:
+            print(os.getenv("MYSQL_HOST"))
+            print(os.getenv('MYSQL_PORT'))
+            print(os.getenv("MYSQL_USER"))
+            print(os.getenv("MYSQL_PASSWORD"))
+            print(os.getenv("MYSQL_DATABASE"))
+            print(os.getenv('MYSQL_SSL_CA'))
             connection = mysql.connector.connect(
                 host=os.getenv("MYSQL_HOST"),
-                port=int(os.getenv('MYSQL_PORT')),
+                port=os.getenv('MYSQL_PORT'),
                 user=os.getenv("MYSQL_USER"),
                 password=os.getenv("MYSQL_PASSWORD"),
                 database=os.getenv("MYSQL_DATABASE"),
