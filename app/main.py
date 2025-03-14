@@ -313,7 +313,7 @@ async def generate_user_outfit(temperature: int, condition: str, request: Reques
             if user:
                 clothes = await get_user_clothes(user_id)
                 weather_text = f"{temperature}°F, {condition}"
-                prompt = f"From these pieces of clothing: {clothes} and based on the weather ({weather_text}), generate an outfit me to wear."
+                prompt = f"From these pieces of clothing: {clothes} and based on the weather ({weather_text} F), generate an outfit me to wear."
                 outfit = await generate_ai_response(prompt)
                 return JSONResponse(outfit, status_code=200)
     return JSONResponse({"error": "Failed to authenticate user"}, status_code=401)
