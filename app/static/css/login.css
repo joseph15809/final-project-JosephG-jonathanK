@@ -47,7 +47,7 @@ img {
 .login-form {
     position: relative;
     margin: auto;
-    background: linear-gradient(-45deg, #ee52d4, #3c7ee7, #d5235b);
+    background-color: hsla(0, 0%, 100%, .01);
     color: hsl(0, 0%, 100%);
     width: fit-content;
     padding: 20px;

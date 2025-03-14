@@ -9,8 +9,8 @@ import requests
 import time
 
 load_dotenv()
-url = "http://localhost:8000/api/temperature"
-reg_url = "http://localhost:8000/api/register_device/"
+url = "http://final-project-josephg-jonathank.onrender.com/api/temperature"
+reg_url = "http://final-project-josephg-jonathank.onrender.com/api/register_device/"
 BROKER = "broker.emqx.io"
 PORT = 1883
 BASE_TOPIC = os.getenv("BASE_TOPIC")
